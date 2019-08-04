@@ -3,9 +3,10 @@
     <head><title>Spinny wheel thingy</title></head>
     <body>
         <canvas width=300 height=300 id='mainCanvas' ></canvas>
+        <script src='colorTools.js'></script>
         <script src='wheelObjs.js'></script>
         <script>
-            var wheel = new wheelGroup(mainCanvas);
+            var wheel = new wheelObjs.wheelGroup(mainCanvas);
             wheel.drawPieces();
             wheel.renderWheel();
             wheel.renderSpin();

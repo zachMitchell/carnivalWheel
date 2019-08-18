@@ -116,6 +116,53 @@ var wheelObjs = {
         for(var i = 0;i<count;i++)
             resultArray.push(new this.wheelPiece(wh,count));
         return resultArray;
+    },
+
+    pegSet:function(canvasSize = 300, count = 20){
+        this.canvasSize = canvasSize;
+        this.canvas = document.createElement('canvas');
+        this.rotateCanvas = document.createElement('canvas');
+        this.count = count;
+        this.rotatePercent = 0;
+
+        this.configure = function(count,canvasSize = this.canvasSize){
+            var ctx = this.canvas.getContext('2d');
+            this.canvas.width = this.canvas.height = canvasSize;
+            this.count = count;
+
+            ctx.translate(canvasSize / 2,canvasSize / 2);
+            ctx.fillStyle='#000000';
+            for(var i = 0; i<count;i++){
+                ctx.beginPath();
+                ctx.arc(canvasSize / 2.2,0, canvasSize / 60 ,0,2*Math.PI);
+                ctx.stroke();
+                ctx.fill();
+                ctx.closePath();
+                ctx.rotate((count / 20) * Math.PI / 180);
+            }
+            ctx.translate(0-(canvasSize / 2),0-(canvasSize / 2));
+        }
+
+        this.rotate = function(percent = 0){
+            var ctx = this.rotateCanvas.getContext('2d');
+            var wh = this.rotateCanvas.width = this.rotateCanvas.height = this.canvas.height; //oi :P
+            this.percent = percent;
+            ctx.clearRect(0,0,wh,wh);
+            ctx.translate(wh/2,wh/2);
+            ctx.rotate(360 * (percent * .01) * Math.PI / 180);
+            ctx.drawImage(this.canvas,0 - (wh/2),0 - (wh/2));
+
+            //Cleanup:
+            ctx.translate(0 - (wh/2),0 - (wh/2));
+            ctx.rotate( 360 *  ( (0 - percent) * .01 ) * Math.PI / 180);
+        }
+
+        this.detectPoint = function(percent = this.rotatePercent, points = this.count){
+            var section = 100 / points;
+            console.log(section);
+            var hitNumber = percent % (section + (section/2) );
+            return (100 / section) * hitNumber;
+        }
     }
 }
 

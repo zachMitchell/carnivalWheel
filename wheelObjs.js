@@ -125,7 +125,7 @@ var wheelObjs = {
         this.count = count;
         this.rotatePercent = 0;
 
-        this.configure = function(count,canvasSize = this.canvasSize){
+        this.configure = function(count = this.count,canvasSize = this.canvasSize){
             var ctx = this.canvas.getContext('2d');
             this.canvas.width = this.canvas.height = canvasSize;
             this.count = count;
@@ -138,7 +138,7 @@ var wheelObjs = {
                 ctx.stroke();
                 ctx.fill();
                 ctx.closePath();
-                ctx.rotate((count / 20) * Math.PI / 180);
+                ctx.rotate((360 / count) * Math.PI / 180);
             }
             ctx.translate(0-(canvasSize / 2),0-(canvasSize / 2));
         }
@@ -157,12 +157,42 @@ var wheelObjs = {
             ctx.rotate( 360 *  ( (0 - percent) * .01 ) * Math.PI / 180);
         }
 
-        this.detectPoint = function(percent = this.rotatePercent, points = this.count){
-            var section = 100 / points;
-            console.log(section);
-            var hitNumber = percent % (section + (section/2) );
-            return (100 / section) * hitNumber;
+        //We poll this value to see if we either approach a peg, or go past one. It is offset by 50% to determine where it is after we hit it.
+        this.detectPoint = (percent = this.rotatePercent, points = this.count)=>{
+            var half = (100 / points) / 2;
+            return (100 / (100 / points)) * ( (percent + half) % (points));
         }
+    },
+
+    //The triangle mount is what holds the wheel. The wheelheight is the reference to how large the final product will be (16% larger canvas)
+    makeTriangleMount:function(wheelHeight = 300, canvasSrc = document.createElement('canvas')){
+        var ctx = canvasSrc.getContext('2d');
+        var netHeight = wheelHeight * 1.166;
+
+        if(canvasSrc.height != netHeight){
+            canvasSrc.height = netHeight;
+            canvasSrc.width = netHeight;
+        }
+
+        ctx.clearRect(0,0,netHeight,netHeight);
+
+        ctx.beginPath();
+        ctx.fillStyle='lightgray';
+        ctx.moveTo(netHeight * .35, 350);
+
+        ctx.lineTo(netHeight * .65, 350);
+        ctx.lineTo(netHeight * .5, 350*.5);
+        ctx.lineTo(netHeight * .35, 350);
+        ctx.fill();
+        ctx.closePath();
+
+        return canvasSrc;
+    },
+
+    //The image in the center of the wheel. Probably gonna put some of the smilies from my site in here ;P
+    //imgElement can be either an image or a canvas.
+    centerAxel:function(canvasHeight,imgElement){
+
     }
 }
 

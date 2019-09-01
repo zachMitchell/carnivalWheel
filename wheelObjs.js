@@ -125,7 +125,7 @@ var wheelObjs = {
         this.count = count;
         this.rotatePercent = 0;
 
-        this.configure = function(count = this.count,canvasSize = this.canvasSize){
+        this.configure = function(canvasSize = this.canvasSize, count = this.count){
             var ctx = this.canvas.getContext('2d');
             this.canvas.width = this.canvas.height = canvasSize;
             this.count = count;
@@ -178,11 +178,11 @@ var wheelObjs = {
 
         ctx.beginPath();
         ctx.fillStyle='lightgray';
-        ctx.moveTo(netHeight * .35, 350);
+        ctx.moveTo(netHeight * .25, 350);
 
         ctx.lineTo(netHeight * .65, 350);
-        ctx.lineTo(netHeight * .5, 350*.5);
-        ctx.lineTo(netHeight * .35, 350);
+        ctx.lineTo(netHeight * .45, 350*.5);
+        ctx.lineTo(netHeight * .25, 350);
         ctx.fill();
         ctx.closePath();
 
@@ -211,8 +211,6 @@ var wheelObjs = {
             var ctx = this.mainCanvas.getContext('2d');
             ctx.clearRect(0,0,size,size);
 
-            console.log([imgElement,imgElement.height]);
-
             //If there's no center, make one:
             if(!imgElement){
                 if(this.coreImage) imgElement = this.coreImage;
@@ -229,6 +227,7 @@ var wheelObjs = {
                     imgCtx.closePath();
                 }
             }
+            // console.log([imgElement,imgElement.height]);
 
             //resize the image depending on whether or not width or height is larger:
             var newWidth,newHeight;
@@ -262,9 +261,47 @@ var wheelObjs = {
     },
 
     //The core object that manages all the objects listed above. Whenever the wheel rotates, so will everything else. sames goes for resolution, piece updates, etc.
-    wheel:function(){
+    wheel:function(wheelHeight=300,pieces=3,axelImg){
+        //Initialize!
+        this.coreCanvas = document.createElement('canvas');
+        this.coreCanvas.height = wheelHeight;
+        this.coreCanvas.width = wheelHeight
 
+        //Probably a bad design choice, but the wheel group is taking care of coreCanvas... :/
+        this.wheelGroup = new wheelObjs.wheelGroup(this.coreCanvas,pieces);
+        this.pegSet = new wheelObjs.pegSet(wheelHeight);
+        this.mount = document.createElement('canvas');
+        console.log(wheelHeight / 3);
+        this.centerAxel = new wheelObjs.centerAxel(wheelHeight / 3,axelImg);
+
+        //Unlike the other objects above, this is an object that will constantly be animating. nevertheless, we want to warm up the assets before drawing.
+        this.renderAssets = function(height=300){
+            this.coreCanvas.height = height;
+            this.wheelGroup.drawPieces();
+            this.wheelGroup.renderWheel();
+            this.wheelGroup.renderSpin();
+            this.pegSet.configure(height);
+            wheelObjs.makeTriangleMount(height,this.mount);
+            this.centerAxel.renderMainCanvas(height / 3);
+        }
+
+        this.draw = function(percent){
+            var ctx = this.coreCanvas.getContext('2d');
+            ctx.clearRect(0,0,this.coreCanvas.width,this.coreCanvas.height);
+            this.wheelGroup.draw(percent);
+
+            //Overlay the other things:
+            this.pegSet.rotate(percent);
+            ctx.drawImage(this.pegSet.rotateCanvas,0,0);
+            ctx.drawImage(this.mount,0,0);
+
+            this.centerAxel.renderSpin(percent);
+            ctx.drawImage(this.centerAxel.spinCanvas,this.coreCanvas.height/2.75,this.coreCanvas.height/2.75);
+        }
+
+        this.renderAssets(wheelHeight);
     }
+
 
 }
 

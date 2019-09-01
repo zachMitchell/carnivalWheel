@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+    <body>
+        <span id='resultElement'></span>
+        <!-- <img src='../assets/smileHappy.svg' id='testImage'/> -->
+        <!-- <canvas width=100 height=100 id='dummy'></canvas> -->
+        <script src='../wheelObjs.js'></script>
+        <script>
+            var testImage = document.createElement('img');
+            var axel = new wheelObjs.centerAxel(100,testImage);
+            resultElement.appendChild(axel.spinCanvas);
+
+            testImage.onload = ()=>{
+                axel.renderMainCanvas();
+                axel.renderSpin();
+            };
+
+            testImage.src='../assets/smileHappy.svg';
+            
+            // dummy.getContext('2d').drawImage(testImage,0,0,100,100);
+        </script>
+    </body>
+</html>

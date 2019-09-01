@@ -2,16 +2,30 @@
 <html>
     <head><title>Spinny wheel thingy</title></head>
     <body>
-        <canvas width=300 height=300 id='mainCanvas' ></canvas>
+        <span id='mainArea'></span>
+        <!-- <canvas width=300 height=300 id='gCanvas' ></canvas> -->
         <script src='colorTools.js'></script>
         <script src='wheelObjs.js'></script>
         <script>
-            var wheel = new wheelObjs.wheelGroup(mainCanvas);
-            wheel.drawPieces();
-            wheel.renderWheel();
-            wheel.renderSpin();
-            wheel.draw();
             var percent = 0;
+            var testImage = document.createElement('img');
+            var wheel;
+            testImage.onload=()=>{
+                wheel = new wheelObjs.wheel(300,3,testImage);
+                mainArea.appendChild(wheel.coreCanvas);
+                wheel.draw(percent);
+            }
+            testImage.src='assets/smileHappy.svg';
+
+
+            //Main wheel element:
+            // var wheelGroup = new wheelObjs.wheelGroup(setObjProperties(document.createElement('canvas'),{height:300}));
+            // wheelGroup.drawPieces();
+            // wheelGroup.renderWheel();
+            // wheelGroup.renderSpin();
+            // wheelGroup.draw();
+            // mainArea.appendChild(wheelGroup.spinCanvas);
+
             // var loop = setInterval(()=>{
             //     wheel.draw(percent);
             //     percent++;

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+    <body>
+        <canvas id='testC' width="300" height='300'></canvas>
+        <script src='../wheelObjs.js'></script>
+        <script>
+        var ctx = testC.getContext('2d');
+        var testPegs = new wheelObjs.pegSet();
+        testPegs.configure();
+        testPegs.rotate();
+        ctx.drawImage(testPegs.canvas,0,0);
+
+
+        /*ctx.translate(150,150);
+        ctx.fillStyle='#000000';
+        for(var i = 0; i<20;i++){
+            ctx.beginPath();
+            ctx.arc(135,0,5,0,2*Math.PI);
+            ctx.stroke();
+            ctx.fill();
+            ctx.closePath();
+            ctx.rotate((360 / 20) *Math.PI / 180);
+        }*/
+        </script>
+    </body>
+</html>

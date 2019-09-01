@@ -192,8 +192,80 @@ var wheelObjs = {
     //The image in the center of the wheel. Probably gonna put some of the smilies from my site in here ;P
     //imgElement can be either an image or a canvas.
     centerAxel:function(canvasHeight,imgElement){
+        this.size = canvasHeight
+        this.mainCanvas = document.createElement('canvas');
+        this.mainCanvas.height = canvasHeight;
+        this.mainCanvas.width = canvasHeight;
+
+        this.spinCanvas = document.createElement('canvas');
+        this.spinCanvas.width = canvasHeight;
+        this.spinCanvas.height = canvasHeight;
+        this.coreImage = imgElement;
+
+        this.renderMainCanvas = function(size = this.size,imgElement = this.coreImage){
+            if(size != this.size){
+                this.mainCanvas.width = size;
+                this.mainCanvas.height = size;
+                this.size = size;
+            }
+            var ctx = this.mainCanvas.getContext('2d');
+            ctx.clearRect(0,0,size,size);
+
+            console.log([imgElement,imgElement.height]);
+
+            //If there's no center, make one:
+            if(!imgElement){
+                if(this.coreImage) imgElement = this.coreImage;
+                else{
+                    imgElement = this.coreImage = document.createElement('canvas');
+                    imgElement.width = size;
+                    imgElement.height = size;
+
+                    var imgCtx = imgElement.getContext('2d');
+                    imgCtx.beginPath();
+                    imgCtx.fillStyle = 'rgb(128,128,128)';
+                    imgCtx.arc(size/2,size/2,size/2,0,2*Math.PI);
+                    imgCtx.fill();
+                    imgCtx.closePath();
+                }
+            }
+
+            //resize the image depending on whether or not width or height is larger:
+            var newWidth,newHeight;
+
+            if(imgElement.width > imgElement.height){
+                newWidth = size;
+                newHeight = imgElement.height * (1 / imgElement.width * size);
+            }
+            else{
+                newHeight = size;
+                newWidth = imgElement.width * (1 / imgElement.height * size);
+            }
+                
+            ctx.drawImage(imgElement,0,0,newWidth,newHeight);
+        }
+
+        this.renderSpin = function(percent = 0){
+            var ctx = this.spinCanvas.getContext('2d');
+            ctx.clearRect(0,0,this.size,this.size);
+
+            //Setup for rotating
+            ctx.translate(this.size/2,this.size/2);
+            ctx.rotate((360 * percent * .01 ) * Math.PI / 180 );
+
+            ctx.drawImage(this.mainCanvas,0-(this.size/2),0-(this.size/2));
+
+            //Cleanup
+            ctx.rotate((360 * ((0 - percent) * .01) ) * Math.PI / 180 );
+            ctx.translate(0 - (this.size/2), 0 - (this.size/2));
+        }
+    },
+
+    //The core object that manages all the objects listed above. Whenever the wheel rotates, so will everything else. sames goes for resolution, piece updates, etc.
+    wheel:function(){
 
     }
+
 }
 
 function setObjProperties(targetObj,appendage){

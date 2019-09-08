@@ -1,5 +1,6 @@
 //Made by Zachary Mitchell in 2019!
 //The core obejcts and helpful functions for creating a wheel
+//General precaution, at least 95% of this code doesn't rely on width, due to most components being even both ways, it's taken out of the equation most of the time.
 
 var wheelObjs = {
 
@@ -12,7 +13,7 @@ var wheelObjs = {
         this.fraction = fraction;
         this.render = function(){
             this.bitmap.width = wh;
-            this.bitmap.height = Math.floor(wh/2);
+            this.bitmap.height = wh/1.9;
             var ctx = this.bitmap.getContext("2d");
     
             var ridgeAvoid = Math.floor( (wh/2) * .967 );
@@ -31,25 +32,25 @@ var wheelObjs = {
                 ctx.fillStyle=resultfill+')';
                 ctx.strokeStyle=resultStroke+')';
             }
-    
-            // console.log([ridgeAvoid,wh]);
-            ctx.lineWidth=7.5;
-    
+
+            ctx.lineWidth=10;
+            var magicEquation = (2 - (2 / fraction) );
+            //(magicEquation - (magicEquation/360 * -1))
             ctx.beginPath();
             ctx.moveTo(wh/2,wh/2);
             ctx.lineTo(wh,wh/2);
-            ctx.arc(wh/2,wh/2,ridgeAvoid,0,(2 - (2 / fraction) )*Math.PI,true);
+            ctx.arc(wh/2,wh/2,ridgeAvoid,0, magicEquation * Math.PI,true);
             ctx.lineTo(wh/2,wh/2);
+            ctx.fill();
             ctx.stroke();
             ctx.closePath();
-            ctx.fill();
         }
     
     },
     
     //Responsible for maintaining each piece. Each piece is rotated based on it's size and how many pieces are on the wheel.
     //Pieces can be either an existing array of pieces, or a number indicating the number to generate.
-    wheelGroup:function(masterCanvas = document.createElement('canvas'),pieces = 3,setColor){
+    wheelGroup:function(masterCanvas = document.createElement('canvas'),pieces = 3,setColor=[]){
         this.masterCanvas = masterCanvas; //Where everything will overlay.
         this.wheelCanvas = setObjProperties(document.createElement('canvas'),{
             width:this.masterCanvas.height,
@@ -60,7 +61,7 @@ var wheelObjs = {
            height:this.wheelCanvas.height 
         });
     
-        this.pieces = typeof pieces == "number"?wheelObjs.generatePieces(this.masterCanvas.height,pieces):pieces;
+        this.pieces = typeof pieces == "number"?wheelObjs.generatePieces(this.masterCanvas.height,pieces,setColor):pieces;
         this.percent = 0; //Where the wheel actually is.
         this.drawPieces = ()=>this.pieces.forEach(e=>e.render()); //Should only be done when needed.
     
@@ -111,10 +112,15 @@ var wheelObjs = {
     },
     
     //A dumb function that I can use to debug stuff :P
-    generatePieces:function(wh,count){
+    generatePieces:function(wh,count,colors=[]){
+        //By default, an undefined index triggers the default value in JS arguments.
+        var smoothColors = [];
+        if(colors.length)
+            smoothColors = colorTools.generateColors(colors,count);
+
         var resultArray = [];
         for(var i = 0;i<count;i++)
-            resultArray.push(new this.wheelPiece(wh,count));
+            resultArray.push(new this.wheelPiece(wh,count,smoothColors[i]));
         return resultArray;
     },
 
@@ -146,7 +152,7 @@ var wheelObjs = {
         this.rotate = function(percent = 0){
             var ctx = this.rotateCanvas.getContext('2d');
             var wh = this.rotateCanvas.width = this.rotateCanvas.height = this.canvas.height; //oi :P
-            this.percent = percent;
+            this.rotatePercent = percent;
             ctx.clearRect(0,0,wh,wh);
             ctx.translate(wh/2,wh/2);
             ctx.rotate(360 * (percent * .01) * Math.PI / 180);
@@ -159,8 +165,8 @@ var wheelObjs = {
 
         //We poll this value to see if we either approach a peg, or go past one. It is offset by 50% to determine where it is after we hit it.
         this.detectPoint = (percent = this.rotatePercent, points = this.count)=>{
-            var half = (100 / points) / 2;
-            return (100 / (100 / points)) * ( (percent + half) % (points));
+            var fullPercent = 100 / points;
+            return 100/fullPercent * (((fullPercent/2) + percent) % fullPercent);
         }
     },
 
@@ -260,18 +266,52 @@ var wheelObjs = {
         }
     },
 
+    tickerTriangle:function(){
+        this.mainCanvas = document.createElement('canvas');
+        this.spinCanvas = document.createElement('canvas');
+
+        this.render = function(height){
+            if(this.mainCanvas.height != height){
+                this.mainCanvas.width = width;
+                this.mainCanvas.height = height;
+            }
+            
+                var ctx = mainCanvas.getContext('2d');
+
+                ctx.beginPath();
+                ctx.fillStyle='#000';
+                ctx.moveTo(height * .45, 5);
+    
+                ctx.lineTo(height * .55, 5);
+                ctx.lineTo(height * .5,height*.2);
+                ctx.lineTo(height * .45,5);
+                ctx.fill();
+                ctx.closePath();
+        }
+
+        this.renderTick = function(percent = 0,reverse = false){
+            if(this.spinCanvas.height != this.mainCanvas.height){
+                this.spinCanvas.width = this.mainCanvas.width;
+                this.spinCanvas.height = this.mainCanvas.height;
+            }
+            var ctx = spinCanvas.getContext('2d');
+            ctx.translate(0,this.spinCanvas.height/2);
+            //Ok... now we just need to emulate the triangle going across a peg
+        }
+
+    },
+
     //The core object that manages all the objects listed above. Whenever the wheel rotates, so will everything else. sames goes for resolution, piece updates, etc.
-    wheel:function(wheelHeight=300,pieces=3,axelImg){
+    wheel:function(wheelHeight=300,pieces=3,axelImg,colors=[]){
         //Initialize!
         this.coreCanvas = document.createElement('canvas');
         this.coreCanvas.height = wheelHeight;
         this.coreCanvas.width = wheelHeight
 
         //Probably a bad design choice, but the wheel group is taking care of coreCanvas... :/
-        this.wheelGroup = new wheelObjs.wheelGroup(this.coreCanvas,pieces);
+        this.wheelGroup = new wheelObjs.wheelGroup(this.coreCanvas,pieces,colors);
         this.pegSet = new wheelObjs.pegSet(wheelHeight);
         this.mount = document.createElement('canvas');
-        console.log(wheelHeight / 3);
         this.centerAxel = new wheelObjs.centerAxel(wheelHeight / 3,axelImg);
 
         //Unlike the other objects above, this is an object that will constantly be animating. nevertheless, we want to warm up the assets before drawing.

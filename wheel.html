@@ -3,7 +3,8 @@
     <head><title>Spinny wheel thingy</title></head>
     <body>
         <span id='mainArea'></span>
-        <!-- <canvas width=300 height=300 id='gCanvas' ></canvas> -->
+        <p id='pegPercent'></p>
+        <p id='cTick'></p>
         <script src='colorTools.js'></script>
         <script src='wheelObjs.js'></script>
         <script>
@@ -11,26 +12,37 @@
             var testImage = document.createElement('img');
             var wheel;
             testImage.onload=()=>{
-                wheel = new wheelObjs.wheel(300,3,testImage);
+                wheel = new wheelObjs.wheel(300,7,testImage,['#FF0000','#00FF00','#0000FF']);
                 mainArea.appendChild(wheel.coreCanvas);
                 wheel.draw(percent);
             }
             testImage.src='assets/smileHappy.svg';
 
-
+            /*var wheelPiece = new wheelObjs.wheelPiece(300,4,[255,102,0]);
+            wheelPiece.render();
+            mainArea.appendChild(wheelPiece.bitmap);*/
             //Main wheel element:
-            // var wheelGroup = new wheelObjs.wheelGroup(setObjProperties(document.createElement('canvas'),{height:300}));
-            // wheelGroup.drawPieces();
-            // wheelGroup.renderWheel();
-            // wheelGroup.renderSpin();
-            // wheelGroup.draw();
-            // mainArea.appendChild(wheelGroup.spinCanvas);
+            var wheelGroup = new wheelObjs.wheelGroup(setObjProperties(document.createElement('canvas'),{height:300}),50,['#FF0000','#00FF00','#0000FF']);
+            wheelGroup.drawPieces();
+            wheelGroup.renderWheel();
+            wheelGroup.renderSpin();
+            wheelGroup.draw();
+            mainArea.appendChild(wheelGroup.spinCanvas);
 
-            // var loop = setInterval(()=>{
-            //     wheel.draw(percent);
-            //     percent++;
-            //     if(percent >= 100) percent = 0;
-            // },16.6);
+            var lastTick = 0;
+            var loop = setInterval(()=>{
+                wheel.draw(percent);
+                percent+=.2;
+                if(percent >= 100) percent = 0;
+                currTick = wheel.pegSet.detectPoint();
+                pegPercent.innerHTML=wheel.pegSet.rotatePercent;
+                cTick.innerHTML=currTick;
+                if(currTick < lastTick){
+                    console.warn('tick!');
+                }
+                lastTick = currTick;
+
+            },16.6);
         </script>
     </body>
 </html>

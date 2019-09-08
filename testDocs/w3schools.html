@@ -5,8 +5,9 @@
 
     <!-- <canvas id="myCanvas" width="300" height="300" style="border:1px solid #d3d3d3;">
         Your browser does not support the HTML5 canvas tag.</canvas><br> -->
-    <input type='number' value=1 id='b' onchange="circle(a.value,this.value)" step=.01 /><br>
-    <input type='number' id='a' value=1 onchange="circle(this.value,b.value)" step=.01 /><br>
+    <input type='number' value=1 id='b' onchange="circle(a.value,this.value,lWidth.value)" step=.01 /><br>
+    <input type='number' id='a' value=1 onchange="circle(this.value,b.value,lWidth.value)" step=.01 /><br>
+    <input type='number' id='lWidth' value=1 onchange="circle(a.value,b.value,this.value)" step=.01 /> LineWidth<br>
     <canvas width=300 height=300 id='testC'></canvas>
 
     <script>
@@ -19,13 +20,14 @@
         "I want my line to protrude this many pixels out"*/
         ctx.translate(150, 150);
         ctx.rotate(180 * Math.PI / 180);
-        function circle(n1 = 1, n2 = 1) {
+        function circle(n1 = 1, n2 = 1, line=1) {
+            ctx.lineWidth = line;
             ctx.clearRect(-150, -150, 300, 300);
             ctx.beginPath();
             ctx.moveTo(0, 0);
             ctx.lineTo(145, 0);
-
-            ctx.arc(0, 0, 145, 0, n1 * Math.PI / n2, true);
+            console.log([n1,(line*.99),(n1 *(line * .99))])
+            ctx.arc(0, 0, 145, 0, (n1 - (n1/360 * line)) * Math.PI / n2, true);
 
             ctx.lineTo(0, 0);
 

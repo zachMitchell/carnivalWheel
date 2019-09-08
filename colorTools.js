@@ -73,6 +73,7 @@ var colorTools = {
     },
     
     //Javascript already can read hex; we can use that to help make a quick conversion to rgb:
+    //Note to self: I seem to have programmed this to avoid "#"
     hex2RgbArray:function(hexArray){
         //Take in all hex strings from the function arguments:
         let resultArray=[];
@@ -98,22 +99,16 @@ var colorTools = {
             let hexStore=[];
             //Go through all color elements; if we have some hex, convert it:
             for(var i of colorList){
-                if(typeof i == 'object' && typeof i.length == 'number'){ //Assume this is an array
+                if(typeof i == 'object' && typeof i.length == 'number') //Assume this is an array
                     convertedColors.push(i);
-                    if(hexStore.length){
-                        convertedColors.push(...colorTools.hex2RgbArray(hexStore));
-                        hexStore = [];
-                    }
-                }
                 else if(typeof i == 'string')
                     hexStore.push(i);
             }
-
             if(hexStore.length)
                 convertedColors.push(...colorTools.hex2RgbArray(hexStore));
         }
 
-        var percentSplit = 100 / splitCount-1;
+        var percentSplit = 100 / (splitCount-1);
         var currPercent = 0;
         var resultArray = [];
 

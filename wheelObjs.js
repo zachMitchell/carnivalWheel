@@ -271,20 +271,20 @@ var wheelObjs = {
         this.spinCanvas = document.createElement('canvas');
 
         this.render = function(height){
-            if(this.mainCanvas.height != height){
-                this.mainCanvas.width = width;
+            if(height && this.mainCanvas.height != height){
+                this.mainCanvas.width = height;
                 this.mainCanvas.height = height;
             }
             
-                var ctx = mainCanvas.getContext('2d');
+                var ctx = this.mainCanvas.getContext('2d');
 
                 ctx.beginPath();
                 ctx.fillStyle='#000';
-                ctx.moveTo(height * .45, 5);
+                ctx.moveTo(height * .475, 0);
     
-                ctx.lineTo(height * .55, 5);
-                ctx.lineTo(height * .5,height*.2);
-                ctx.lineTo(height * .45,5);
+                ctx.lineTo(height * .525, 0);
+                ctx.lineTo(height * .5,height*.1);
+                ctx.lineTo(height * .475,0);
                 ctx.fill();
                 ctx.closePath();
         }
@@ -294,9 +294,23 @@ var wheelObjs = {
                 this.spinCanvas.width = this.mainCanvas.width;
                 this.spinCanvas.height = this.mainCanvas.height;
             }
-            var ctx = spinCanvas.getContext('2d');
-            ctx.translate(0,this.spinCanvas.height/2);
+            var ctx = this.spinCanvas.getContext('2d');
+            ctx.clearRect(0,0,this.spinCanvas.height,this.spinCanvas.height);
+            ctx.translate(this.spinCanvas.height/2,0);
             //Ok... now we just need to emulate the triangle going across a peg
+            if(percent > 50){
+                percent = 50 - (percent-50);
+            }
+            var gloriousMath = 360 * (percent * .25 * .01);
+            //If the wheel is going the normal direction, we just go backwards in rotation.
+            if(!reverse) gloriousMath = 0 - gloriousMath;
+
+            ctx.rotate(gloriousMath * Math.PI / 180);
+            ctx.drawImage(this.mainCanvas,0-(this.spinCanvas.height/2),0);
+
+            //Reset:
+            ctx.rotate(0-gloriousMath * Math.PI / 180);
+            ctx.translate(0-(this.spinCanvas.height/2),0);
         }
 
     },
@@ -313,6 +327,7 @@ var wheelObjs = {
         this.pegSet = new wheelObjs.pegSet(wheelHeight);
         this.mount = document.createElement('canvas');
         this.centerAxel = new wheelObjs.centerAxel(wheelHeight / 3,axelImg);
+        this.tickerTriangle = new wheelObjs.tickerTriangle();
 
         //Unlike the other objects above, this is an object that will constantly be animating. nevertheless, we want to warm up the assets before drawing.
         this.renderAssets = function(height=300){
@@ -323,9 +338,10 @@ var wheelObjs = {
             this.pegSet.configure(height);
             wheelObjs.makeTriangleMount(height,this.mount);
             this.centerAxel.renderMainCanvas(height / 3);
+            this.tickerTriangle.render(height);
         }
 
-        this.draw = function(percent){
+        this.draw = function(percent,reverse = false){
             var ctx = this.coreCanvas.getContext('2d');
             ctx.clearRect(0,0,this.coreCanvas.width,this.coreCanvas.height);
             this.wheelGroup.draw(percent);
@@ -334,9 +350,12 @@ var wheelObjs = {
             this.pegSet.rotate(percent);
             ctx.drawImage(this.pegSet.rotateCanvas,0,0);
             ctx.drawImage(this.mount,0,0);
+            this.tickerTriangle.renderTick(this.pegSet.detectPoint(),reverse);
+            ctx.drawImage(this.tickerTriangle.spinCanvas,0,0);
 
             this.centerAxel.renderSpin(percent);
             ctx.drawImage(this.centerAxel.spinCanvas,this.coreCanvas.height/2.75,this.coreCanvas.height/2.75);
+
         }
 
         this.renderAssets(wheelHeight);

@@ -1,22 +1,26 @@
 <!DOCTYPE html>
 <html>
     <body>
-        <canvas id='tCanvas' width = 350 height="350"></canvas>
+        <!-- <canvas id='tCanvas' width = 350 height="350"></canvas> -->
         <script src='../wheelObjs.js'></script>
         <script>
+            var testTriangle = new wheelObjs.tickerTriangle();
+            testTriangle.render(350);
+            testTriangle.renderTick();
+            document.body.appendChild(testTriangle.spinCanvas);
             // wheelObjs.makeTriangleMount(200, tCanvas);
 
-            ctx = tCanvas.getContext('2d');
+            // ctx = tCanvas.getContext('2d');
 
-            ctx.beginPath();
-            ctx.fillStyle='#000';
-            ctx.moveTo(350 * .45, 5);
+            // ctx.beginPath();
+            // ctx.fillStyle='#000';
+            // ctx.moveTo(350 * .45, 5);
 
-            ctx.lineTo(350 * .55, 5);
-            ctx.lineTo(350 * .5,350*.2);
-            ctx.lineTo(350 * .45,5);
-            ctx.fill();
-            ctx.closePath();
+            // ctx.lineTo(350 * .55, 5);
+            // ctx.lineTo(350 * .5,350*.2);
+            // ctx.lineTo(350 * .45,5);
+            // ctx.fill();
+            // ctx.closePath();
         </script>
     </body>
 </html>

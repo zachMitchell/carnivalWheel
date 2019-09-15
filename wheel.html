@@ -3,8 +3,8 @@
     <head><title>Spinny wheel thingy</title></head>
     <body>
         <span id='mainArea'></span><br>
-        <button onclick='spinWheel(wSpeed.value*1,pPower.value*1,aDrag.value*1)'>Spin</button>
-        <button onclick='clearInterval(loop)'>Stop</button>
+        <button onclick='wheelFuncs.spin(wheelThing,wSpeed.value*1,pPower.value*1,aDrag.value*1)'>Spin</button>
+        <button onclick='clearInterval(wheelthing.loop)'>Stop</button>
 
         <br>
         <input type='number' value=2 id='wSpeed'> Wheel Speed<br>
@@ -16,14 +16,17 @@
         <p id='pIncrease'></p>
         <script src='colorTools.js'></script>
         <script src='wheelObjs.js'></script>
+        <script src='wheelFuncs.js'></script>
         <script>
             var percent = 0;
             var testImage = document.createElement('img');
             var wheel;
+            var wheelThing;
             testImage.onload=()=>{
                 wheel = new wheelObjs.wheel(300,7,testImage,['#FF0000','#00FF00','#0000FF']);
                 mainArea.appendChild(wheel.coreCanvas);
                 wheel.draw(percent);
+                wheelThing = new wheelFuncs.wheelInstance(wheel);
             }
             testImage.src='assets/smileHappy.svg';
 
@@ -37,35 +40,6 @@
             // wheelGroup.renderSpin();
             // wheelGroup.draw();
             // mainArea.appendChild(wheelGroup.spinCanvas);
-
-            var lastTick = 0;
-            var percentIncrease;
-            var loop;
-
-            function spinWheel(wheelSpeed = 2,pegPower = .02,axelDrag = .001){
-                clearInterval(loop);
-                percentIncrease = wheelSpeed;
-                loop = setInterval(()=>{
-                wheel.draw(percent);
-                percent+=percentIncrease;
-                percentIncrease-=axelDrag;
-                if(percent >= 100) percent = 0;
-                currTick = wheel.pegSet.detectPoint();
-                // pegPercent.innerHTML=wheel.pegSet.rotatePercent;
-                cTick.innerHTML=currTick;
-                if(lastTick < 50 && currTick > 50){
-                    console.warn('tick!');
-
-                    tickSound.currentTime = 0;
-                    percentIncrease-=pegPower;
-                    // pIncrease.innerHTML=percentIncrease;
-                    if(tickSound.paused)
-                        tickSound.play();
-                }
-                lastTick = currTick;
-                if(percentIncrease <= 0) clearInterval(loop);
-            },16.6);
-            }
         </script>
         <audio src="assets/tick5.mp3" id='tickSound'/>
     </body>

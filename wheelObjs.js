@@ -315,7 +315,9 @@ var wheelObjs = {
 
     },
 
-    //The core object that manages all the objects listed above. Whenever the wheel rotates, so will everything else. sames goes for resolution, piece updates, etc.
+    /*The core object that manages all the objects listed above. 
+    Whenever the wheel rotates, so will everything else.
+    Same goes for resolution, piece updates, etc.*/
     wheel:function(wheelHeight=300,pieces=3,axelImg,colors=[]){
         //Initialize!
         this.coreCanvas = document.createElement('canvas');

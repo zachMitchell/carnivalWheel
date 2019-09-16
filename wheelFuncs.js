@@ -51,6 +51,8 @@ var wheelFuncs = {
         [2] allow tick to be detected - bool
         [3] append percent instead of exact location - bool
         [4] function to execute upon completion
+    
+    The end location as of this writing is only approximate due to how the animation is broken down.
     */
     animate:function*(config){
         //Loop until we pass through everything:
@@ -67,9 +69,16 @@ var wheelFuncs = {
                 // console.log(targetChange);
 
                 config.wheel.percent+=targetChange;
+                if(config.wheel.percent > 100)
+                    config.wheel.percent -= 100;
                 config.wheel.wheel.draw(config.wheel.percent,targetChange < 0);
                 var currTick = config.wheel.wheel.pegSet.detectPoint();
-                if(i[2] && config.wheel.lastTick < 50 && currTick > 50){
+
+                var playTick = targetChange < 0 ?
+                (config.wheel.lastTick < 50 && currTick > 50):
+                (config.wheel.lastTick > 50 && currTick < 50);
+
+                if(i[2] && playTick){
                     //Tick sound as defined in the main page.
                     tickSound.currentTime = 0;
                     if(tickSound.paused) tickSound.play();

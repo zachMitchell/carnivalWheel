@@ -365,9 +365,3 @@ var wheelObjs = {
 
 
 }
-
-function setObjProperties(targetObj,appendage){
-    for(var i in appendage)
-        targetObj[i] = appendage[i];
-    return targetObj;
-}

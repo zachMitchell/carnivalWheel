@@ -45,12 +45,14 @@ var wheelFuncs = {
     /*Move the spinner in different directions dynamically based on a configuration provided:
     The config is an object with the following properties:
     wheel: the target wheel
-    sectors: an array of arrays, each containing some of the following indexes:
-        [0] percent to which we stop on - float
-        [1] duration in milliseconds - float
-        [2] allow tick to be detected - bool
-        [3] append percent instead of exact location - bool
-        [4] function to execute upon completion
+    sectors: an array of objects, each containing some of the following keys:
+        goTo - percent to which we stop on - float
+        duration - duration in milliseconds - float
+        playTick - allow tick to be detected - bool
+        append - append percent instead of exact location - bool
+        doneFunc - function to execute upon completion
+        swingIn - (Optional) slowly ramp up to normal speed for (percent value) of the beginning of the sector - float
+        swingOut - (Optional) slam the brakes to stop the animation for (percent value) of the sector - float
     
     The end location as of this writing is only approximate due to how the animation is broken down.
     */
@@ -59,14 +61,41 @@ var wheelFuncs = {
         for(var i of config.sectors){
             config.wheel.currMilliseconds = 0;
             var previousPercent = config.wheel.percent;
-            // console.log([(i[0] - previousPercent) / i[1],previousPercent,i[0],i[1]]);
+            var swingNumbers = {};
+            var swingProgress = {};
+
+            ['In','Out'].forEach((e,index)=>{
+                if(i['swing'+e] != undefined){
+                    //Create the numbers to do a proper swing. If it's swingOut, enter the results in reverse:
+                    var swingDur = i.duration * (i['swing'+e] * .01);
+                    swingNumbers[e.toLowerCase()] = index?swing(swingDur,swingDur/16.6).reverse():swing(swingDur,swingDur/16.6);
+                    swingProgress[e.toLowerCase()] = 0;
+                    console.log(['swingDur',swingDur,swingNumbers[e.toLowerCase()]]);
+                }
+            });
+
+            // console.log([(i.goTo - previousPercent) / i.duration,previousPercent,i.goTo,i.duration]);
+            //Nested function that will iterate within this scope:
             config.wheel.loop = setInterval(()=>{
                 config.wheel.currMilliseconds+=16.6;
                 var targetChange = 0;
+                var speedEquation = (i.duration / 16.6);
+                //If swinging was defined, perform one, with swingOut Prioritized first:
+                if(swingNumbers.out && typeof swingNumbers.out[swingProgress.out] == 'number' 
+                && 100 / i.duration * config.wheel.currMilliseconds >= 100/i.duration * (100-i.swingOut)){
+                    speedEquation = swingNumbers.in[swingProgress.in];
+                    swingProgress.in++;
+                }
+                //If we can't swingOut yet, swingIn...
+                else if(swingNumbers.in && typeof swingNumbers.in[swingProgress.in] == "number"){
+                    speedEquation = swingNumbers.in[swingProgress.in];
+                    swingProgress.in++;
+                }
+
                 //If we want to append percentage:
-                if(i[3]) targetChange = i[0] / (i[1] / 16.6);
-                else targetChange = (i[0] - previousPercent) / (i[1] / 16.6);
-                // console.log(targetChange);
+                if(i.append) targetChange = i.goTo / (i.duration / 16.6);
+                else targetChange = (i.goTo - previousPercent) / speedEquation;
+                console.log(targetChange+' '+ ((i.goTo - previousPercent) / speedEquation) + " " + speedEquation);
 
                 config.wheel.percent+=targetChange;
                 if(config.wheel.percent > 100)
@@ -74,21 +103,23 @@ var wheelFuncs = {
                 config.wheel.wheel.draw(config.wheel.percent,targetChange < 0);
                 var currTick = config.wheel.wheel.pegSet.detectPoint();
 
-                var playTick = targetChange < 0 ?
-                (config.wheel.lastTick < 50 && currTick > 50):
-                (config.wheel.lastTick > 50 && currTick < 50);
+                if(i.playTick){
+                    var isTickReady = targetChange < 0 ?
+                    (config.wheel.lastTick < 50 && currTick > 50):
+                    (config.wheel.lastTick > 50 && currTick < 50);
 
-                if(i[2] && playTick){
-                    //Tick sound as defined in the main page.
-                    tickSound.currentTime = 0;
-                    if(tickSound.paused) tickSound.play();
+                    if(isTickReady){
+                        //Tick sound as defined in the main page.
+                        tickSound.currentTime = 0;
+                        if(tickSound.paused) tickSound.play();
+                    }
                 }
                 config.wheel.lastTick = currTick;
 
-                if(config.wheel.currMilliseconds >= i[1]){
+                if(config.wheel.currMilliseconds >= i.duration){
                     clearInterval(config.wheel.loop);
                     //execute a function if it's available
-                    if(typeof i[4] == 'function') i[4](config.wheel);
+                    if(typeof i.doneFunc == 'function') i.doneFunc(config.wheel);
                     //NEXT sector!
                     config.wheel.currAnimation.next();
                 }

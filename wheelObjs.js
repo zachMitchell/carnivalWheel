@@ -4,13 +4,14 @@
 
 var wheelObjs = {
 
-    wheelPiece:function(wh,fraction=3,color=[230,230,230]){
+    wheelPiece:function(wh,fraction=3,color=[230,230,230],text=''){
     
         this.bitmap = document.createElement('canvas');
         this.wh = wh;
         //This should accept an rgb array:
         this.color = color;
         this.fraction = fraction;
+        this.text = text;
         this.render = function(){
             this.bitmap.width = wh;
             this.bitmap.height = wh/1.9;
@@ -44,6 +45,11 @@ var wheelObjs = {
             ctx.fill();
             ctx.stroke();
             ctx.closePath();
+
+            ctx.font=(wh * .1)+'px Arial';
+            ctx.fillStyle = ctx.strokeStyle;
+            ctx.rotate((360 * 1.1)*Math.PI/180);
+            ctx.fillText(text,wh/2,wh/2);
         }
     
     },

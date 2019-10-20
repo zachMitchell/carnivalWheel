@@ -63,39 +63,47 @@ var wheelFuncs = {
             var previousPercent = config.wheel.percent;
             var swingNumbers = {};
             var swingProgress = {};
+            //Equation for speed depends on if we have a fadeIn/fadeOut
+            var speedEquation = i.duration;
 
             ['In','Out'].forEach((e,index)=>{
                 if(i['swing'+e] != undefined){
                     //Create the numbers to do a proper swing. If it's swingOut, enter the results in reverse:
                     var swingDur = i.duration * (i['swing'+e] * .01);
-                    swingNumbers[e.toLowerCase()] = index?swing(swingDur,swingDur/16.6).reverse():swing(swingDur,swingDur/16.6);
+                    swingNumbers[e.toLowerCase()] = index?swing(swingDur,swingDur/16.6,i.strength):swing(swingDur,swingDur/16.6,i.strength).reverse();
                     swingProgress[e.toLowerCase()] = 0;
                     console.log(['swingDur',swingDur,swingNumbers[e.toLowerCase()]]);
+                    speedEquation-=swingDur;
                 }
             });
+
+            //slash down to frames when done:
+            speedEquation/=16.6;
 
             // console.log([(i.goTo - previousPercent) / i.duration,previousPercent,i.goTo,i.duration]);
             //Nested function that will iterate within this scope:
             config.wheel.loop = setInterval(()=>{
+                var currSpeed = speedEquation;
                 config.wheel.currMilliseconds+=16.6;
                 var targetChange = 0;
-                var speedEquation = (i.duration / 16.6);
+
                 //If swinging was defined, perform one, with swingOut Prioritized first:
                 if(swingNumbers.out && typeof swingNumbers.out[swingProgress.out] == 'number' 
                 && 100 / i.duration * config.wheel.currMilliseconds >= 100/i.duration * (100-i.swingOut)){
-                    speedEquation = swingNumbers.in[swingProgress.in];
+                    currSpeed = swingNumbers.in[swingProgress.in];
                     swingProgress.in++;
                 }
                 //If we can't swingOut yet, swingIn...
                 else if(swingNumbers.in && typeof swingNumbers.in[swingProgress.in] == "number"){
-                    speedEquation = swingNumbers.in[swingProgress.in];
+                    currSpeed = swingNumbers.in[swingProgress.in];
                     swingProgress.in++;
                 }
 
+                console.log([speedEquation,currSpeed]);
                 //If we want to append percentage:
                 if(i.append) targetChange = i.goTo / (i.duration / 16.6);
-                else targetChange = (i.goTo - previousPercent) / speedEquation;
-                console.log(targetChange+' '+ ((i.goTo - previousPercent) / speedEquation) + " " + speedEquation);
+                else targetChange = (i.goTo - previousPercent) / currSpeed; //The smaller the number, the faster the speed.
+                // console.log(targetChange+' '+ ((i.goTo - previousPercent) / speedEquation) + " " + speedEquation);
 
                 config.wheel.percent+=targetChange;
                 if(config.wheel.percent > 100)

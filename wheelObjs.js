@@ -24,10 +24,22 @@ var wheelObjs = {
                 let resultfill = '';
                 let resultStroke = '';
                 let start = true;
+                /*Ideally, we want the stroke color to be a faded version of the main color
+                Using this as our reference, we can find out if the color is too bright
+                and have text still readable (and make the wheel more stylish)*/
+                let brightColor = false;
+
+                for(var i of this.color){
+                    //Intentionally left the comparison smaller than the actual brightness to keep vibrant colors
+                    if(i*1.25 > 255){
+                        brightColor = true;
+                        break;
+                    }
+                }
                 
                 for(var i of this.color){
                     resultfill+=(start?'rgb(':',')+i;
-                    resultStroke+=(start?'rgb(':',')+Math.floor((i * 1.5));
+                    resultStroke+=(start?'rgb(':',')+Math.floor(i*(brightColor?.75:1.5));
                     start = false;
                 }
                 ctx.fillStyle=resultfill+')';
@@ -35,7 +47,7 @@ var wheelObjs = {
             }
 
             ctx.lineWidth=10;
-            var magicEquation = (2 - (2 / fraction) );
+            var magicEquation = (2 - (2 / this.fraction) );
             //(magicEquation - (magicEquation/360 * -1))
             ctx.beginPath();
             ctx.moveTo(wh/2,wh/2);
@@ -46,10 +58,25 @@ var wheelObjs = {
             ctx.stroke();
             ctx.closePath();
 
-            ctx.font=(wh * .1)+'px Arial';
+            //Set the text:
+            var sizePercent = .1;
+            var renderText = this.text;
+            if(this.text.length > 5){
+                sizePercent/=2;
+                renderText = this.text.substr(0,12);
+            }
+
+
+            ctx.font=(wh * sizePercent)+'px Arial';
             ctx.fillStyle = ctx.strokeStyle;
-            ctx.rotate((360 * 1.1)*Math.PI/180);
-            ctx.fillText(text,wh/2,wh/2);
+            ctx.translate((wh/2)*1.25,(wh/2)*.95);
+            //We're using a negative number here because the rotation system is counter clockwise
+            ctx.rotate((0- (360 / this.fraction / 2)) * Math.PI/180);
+            ctx.fillText(renderText,0,0);
+
+            //Reset text:
+            ctx.rotate( (360 / this.fraction / 2) * Math.PI/180);
+            ctx.translate(0- (wh/2), 0- (wh/2) );
         }
     
     },

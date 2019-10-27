@@ -19,19 +19,29 @@
         <script src='wheelObjs.js'></script>
         <script src='wheelFuncs.js'></script>
         <script>
+            var rndPhrase = a=>{
+                var res = '';
+                for(var i=0;i<a;i++)
+                    res+=String.fromCharCode(Math.floor(Math.random()*26)+97);
+                return res;
+            }
             var percent = 0;
             var testImage = document.createElement('img');
             var wheel;
             var wheelThing;
             testImage.onload=()=>{
                 wheel = new wheelObjs.wheel(300,7,testImage,['#FF0000','#00FF00','#0000FF']);
+                wheel.wheelGroup.pieces.forEach((e,i)=>{
+                    e.text = rndPhrase(i%2?12:5);
+                });
+                wheel.renderAssets(); // only doing this to add the text.
                 mainArea.appendChild(wheel.coreCanvas);
                 wheel.draw(percent);
                 wheelThing = new wheelFuncs.wheelInstance(wheel);
             }
             testImage.src='assets/smileHappy.svg';
 
-            var wheelPiece = new wheelObjs.wheelPiece(300,5,[255,102,0],'test');
+            var wheelPiece = new wheelObjs.wheelPiece(300,7,[255,102,0],'TheQuackBrownFoxJumped');
             wheelPiece.render();
             mainArea.appendChild(wheelPiece.bitmap);
             //Main wheel element:

@@ -9,7 +9,7 @@ function setObjProperties(targetObj,appendage){
 
 /*return an array of numbers that add up to the approximate number requested... with a twist
 The numbers go up like a hill/curve upwards instead of an exactly divided piece*/
-function swing(sum,pieces,strength = .3){
+function swing(sum,pieces,strength = .1){
     //Check if arguments exist:
     if(sum === undefined || pieces === undefined)
         throw Error("Some arguments wern't provided");
@@ -17,11 +17,13 @@ function swing(sum,pieces,strength = .3){
     var result = [];
     //Create an array of evenly placed numbers:
     for(var i = 0; i < pieces;i++){
-        result.push(sum/pieces);
         if(i>0){
-            var sliver = result[i-1] * strength;
-            result[i]+=sliver;
-            result[i-1]-=sliver;
+            var sliver = result[0] * strength;
+            result[i] = sliver;
+            result[0]*= 1-strength;
+        }
+        else{
+            result.push(sum);
         }
     }
 

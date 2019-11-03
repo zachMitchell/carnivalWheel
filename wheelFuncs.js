@@ -8,13 +8,14 @@ var wheelFuncs = {
         wheelFuncs.reset(this);
     },
 
-    reset:function(wInst){
+    reset:function(wInst,draw = false){
         wInst.lastTick = 0;
         wInst.loop = undefined;
         wInst.percent = 0;
         wInst.percentIncrease = 0;
         wInst.currAnimation = undefined;
         wInst.currMilliseconds = 0; //For animations, once this reaches a max, it can be cleared to 0.
+        if(draw) wInst.wheel.draw(0);
     },
 
     spin:function(wInst,speed = 2,pegPower = .02,axelDrag = .001){
@@ -38,13 +39,9 @@ var wheelFuncs = {
         },16.6);
     },
 
-    inverseSpin:function(wInst){
-
-    },
-
     /*Move the spinner in different directions dynamically based on a configuration provided:
     The config is an object with the following properties:
-    wheel: the target wheel
+    wheel: the target wheel instance
     sectors: an array of objects, each containing some of the following keys:
         goTo - percent to which we stop on - float
         duration - duration in milliseconds - float
@@ -55,6 +52,8 @@ var wheelFuncs = {
         swingOut - (Optional) slam the brakes to stop the animation for (percent value) of the sector - float
     
     The end location as of this writing is only approximate due to how the animation is broken down.
+
+    ...The fades were a pain to make, let's just put it at that X(
     */
     animate:function*(config){
         //Loop until we pass through everything:
@@ -70,9 +69,10 @@ var wheelFuncs = {
                 if(i['swing'+e] != undefined){
                     //Create the numbers to do a proper swing. If it's swingOut, enter the results in reverse:
                     var swingDur = i.duration * (i['swing'+e] * .01);
-                    swingNumbers[e.toLowerCase()] = index?swing(swingDur,swingDur/16.6,i.strength):swing(swingDur,swingDur/16.6,i.strength).reverse();
+                    var percentPercent = (i.goTo - (i.append ? 0 : previousPercent)) * (i['swing'+e] * .01); //A percent of our total time.
+                    swingNumbers[e.toLowerCase()] = index?swing(percentPercent,swingDur/16.6,i.strength):swing(percentPercent,swingDur/16.6,i.strength).reverse();
                     swingProgress[e.toLowerCase()] = 0;
-                    console.log(['swingDur',swingDur,swingNumbers[e.toLowerCase()]]);
+                    // console.log(['swingDur',swingDur,swingNumbers[e.toLowerCase()]]);
                     speedEquation-=swingDur;
                 }
             });
@@ -86,24 +86,29 @@ var wheelFuncs = {
                 var currSpeed = speedEquation;
                 config.wheel.currMilliseconds+=16.6;
                 var targetChange = 0;
+                var fadeIO = false;
 
-                //If swinging was defined, perform one, with swingOut Prioritized first:
-                if(swingNumbers.out && typeof swingNumbers.out[swingProgress.out] == 'number' 
-                && 100 / i.duration * config.wheel.currMilliseconds >= 100/i.duration * (100-i.swingOut)){
-                    currSpeed = swingNumbers.in[swingProgress.in];
-                    swingProgress.in++;
-                }
                 //If we can't swingOut yet, swingIn...
-                else if(swingNumbers.in && typeof swingNumbers.in[swingProgress.in] == "number"){
+                if(swingNumbers.in && typeof swingNumbers.in[swingProgress.in] == "number"){
+                    fadeIO = true;
                     currSpeed = swingNumbers.in[swingProgress.in];
                     swingProgress.in++;
                 }
+                //If swinging was defined, perform one, with swingOut Prioritized first:
+                else if(swingNumbers.out && typeof swingNumbers.out[swingProgress.out] == 'number' 
+                && 100 / i.duration * config.wheel.currMilliseconds >= 100/i.duration * (100-i.swingOut)){
+                    fadeIO = true;
+                    currSpeed = swingNumbers.out[swingProgress.out];
+                    swingProgress.out++;
+                }
 
-                console.log([speedEquation,currSpeed]);
-                //If we want to append percentage:
-                if(i.append) targetChange = i.goTo / (i.duration / 16.6);
-                else targetChange = (i.goTo - previousPercent) / currSpeed; //The smaller the number, the faster the speed.
-                // console.log(targetChange+' '+ ((i.goTo - previousPercent) / speedEquation) + " " + speedEquation);
+                /*For fading in and out, we have special formulas that take care of the speed change. (A.K.A fadeIO)
+                Otherwise, alternate formulas will be calculated based on if we're appending the wheel's percentage or not.
+                (Not a math genius, so probably not a detailed description :P)*/
+                targetChange = 
+                    fadeIO? currSpeed:
+                    i.append? i.goTo / currSpeed:
+                    (i.goTo - previousPercent) / currSpeed;
 
                 config.wheel.percent+=targetChange;
                 if(config.wheel.percent > 100)

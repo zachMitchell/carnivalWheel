@@ -8,14 +8,21 @@ var wheelFuncs = {
         wheelFuncs.reset(this);
     },
 
-    reset:function(wInst,draw = false){
+    reset:function(wInst,draw = false,keepAnimation = false){
         wInst.lastTick = 0;
         wInst.loop = undefined;
         wInst.percent = 0;
         wInst.percentIncrease = 0;
-        wInst.currAnimation = undefined;
+        if(!keepAnimation)
+            wInst.currAnimation = undefined;
         wInst.currMilliseconds = 0; //For animations, once this reaches a max, it can be cleared to 0.
         if(draw) wInst.wheel.draw(0);
+    },
+
+    playTickSound:(volume = 1)=>{
+        tickSound.volume = volume;
+        tickSound.currentTime = 0;
+        if(tickSound.paused) tickSound.play();
     },
 
     spin:function(wInst,speed = 2,pegPower = .02,axelDrag = .001){
@@ -29,10 +36,8 @@ var wheelFuncs = {
             if(wInst.percent >= 100) wInst.percent = 0;
             var currTick = wInst.wheel.pegSet.detectPoint();
             if(wInst.lastTick < 50 && currTick > 50){
-                tickSound.currentTime = 0;
+                this.playTickSound();
                 wInst.percentIncrease-=pegPower;
-                if(tickSound.paused)
-                    tickSound.play();
             }
             wInst.lastTick = currTick;
             if(wInst.percentIncrease <= 0) clearInterval(wInst.loop);
@@ -55,7 +60,9 @@ var wheelFuncs = {
 
     ...The fades were a pain to make, let's just put it at that X(
     */
-    animate:function*(config){
+    animate:function*(config,reset = false){
+        if(reset) this.reset(config.wheel,true,true);
+
         //Loop until we pass through everything:
         for(var i of config.sectors){
             config.wheel.currMilliseconds = 0;
@@ -70,10 +77,10 @@ var wheelFuncs = {
                     //Create the numbers to do a proper swing. If it's swingOut, enter the results in reverse:
                     var swingDur = i.duration * (i['swing'+e] * .01);
                     var percentPercent = (i.goTo - (i.append ? 0 : previousPercent)) * (i['swing'+e] * .01); //A percent of our total time.
-                    swingNumbers[e.toLowerCase()] = index?swing(percentPercent,swingDur/16.6,i.strength):swing(percentPercent,swingDur/16.6,i.strength).reverse();
+                    swingNumbers[e.toLowerCase()] = index?swing(percentPercent,swingDur/16.6).reverse():swing(percentPercent,swingDur/16.6);
                     swingProgress[e.toLowerCase()] = 0;
                     // console.log(['swingDur',swingDur,swingNumbers[e.toLowerCase()]]);
-                    speedEquation-=swingDur;
+                    speedEquation-=percentPercent;
                 }
             });
 
@@ -88,15 +95,17 @@ var wheelFuncs = {
                 var targetChange = 0;
                 var fadeIO = false;
 
-                //If we can't swingOut yet, swingIn...
-                if(swingNumbers.in && typeof swingNumbers.in[swingProgress.in] == "number"){
+                //If swinging was defined, perform one
+                //swingIn
+                if(swingProgress && swingNumbers.in && typeof swingNumbers.in[swingProgress.in] == "number"){
                     fadeIO = true;
                     currSpeed = swingNumbers.in[swingProgress.in];
                     swingProgress.in++;
                 }
-                //If swinging was defined, perform one, with swingOut Prioritized first:
+                //SwingOut
+                //Sorry, the math is a monster X(
                 else if(swingNumbers.out && typeof swingNumbers.out[swingProgress.out] == 'number' 
-                && 100 / i.duration * config.wheel.currMilliseconds >= 100/i.duration * (100-i.swingOut)){
+                && (100 / i.duration) * config.wheel.currMilliseconds >= 100 / i.duration * (i.duration * ( (100-i.swingOut) * .01) )){
                     fadeIO = true;
                     currSpeed = swingNumbers.out[swingProgress.out];
                     swingProgress.out++;
@@ -121,11 +130,8 @@ var wheelFuncs = {
                     (config.wheel.lastTick < 50 && currTick > 50):
                     (config.wheel.lastTick > 50 && currTick < 50);
 
-                    if(isTickReady){
-                        //Tick sound as defined in the main page.
-                        tickSound.currentTime = 0;
-                        if(tickSound.paused) tickSound.play();
-                    }
+                    //Tick sound as defined in the main page.
+                    if(isTickReady) this.playTickSound();
                 }
                 config.wheel.lastTick = currTick;
 

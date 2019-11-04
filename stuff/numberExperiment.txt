@@ -1,12 +1,52 @@
-100
+10
 ---
 1
 2
 3
 4
+
+Experiment: count up until we reach total. If we can't go higher and there's numbers left over, place the remainder in the array (sorted).
+Split into X number of clumps. If the number of clumps > actual numbers, divide current results, double array size.
+
+15
+---
 5
-6
-7
-8
-9
-10
+4
+3
+2
+1
+
+22 | 3 clumps
+---
+1
+1 -> 2
+2
+3 -> 5
+4
+5
+6 -> 15
+
+40 | 17 clumps
+---
+.5
+.5
+1
+1
+1.5
+1.5
+2
+2
+2
+2
+2.5
+2.5
+3
+3
+3.5
+3.5
+4
+4 -> 8
+
+The case above I would assume would be rare. Most of the time, the grand total would be bigger than the amount of pieces needed to be split the use case I'm building.
+
+Holy cow... It's FINALLY done. This file may now RIP.

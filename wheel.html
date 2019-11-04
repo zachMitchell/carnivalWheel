@@ -4,7 +4,7 @@
     <body>
         <span id='mainArea'></span><br>
         <button onclick='wheelFuncs.spin(wheelThing,wSpeed.value*1,pPower.value*1,aDrag.value*1)'>Spin</button>
-        <button onclick='clearInterval(wheelthing.loop)'>Stop</button>
+        <button onclick='clearInterval(wheelThing.loop)'>Stop</button>
 
         <br>
         <input type='number' value=2 id='wSpeed'> Wheel Speed<br>
@@ -42,9 +42,9 @@
             }
             testImage.src='assets/smileHappy.svg';
 
-            var wheelPiece = new wheelObjs.wheelPiece(300,7,[255,102,0],'TheQuackBrownFoxJumped');
-            wheelPiece.render();
-            mainArea.appendChild(wheelPiece.bitmap);
+            // var wheelPiece = new wheelObjs.wheelPiece(300,7,[255,102,0],'TheQuackBrownFoxJumped');
+            // wheelPiece.render();
+            // mainArea.appendChild(wheelPiece.bitmap);
             //Main wheel element:
             // var wheelGroup = new wheelObjs.wheelGroup(setObjProperties(document.createElement('canvas'),{height:300}),50,['#FF0000','#00FF00','#0000FF']);
             // wheelGroup.drawPieces();

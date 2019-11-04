@@ -22,8 +22,8 @@ var wheelAnimations = {
         {goTo:25,duration:100,swingIn:100,doneFunc:()=>wheelFuncs.playTickSound() }, //Hair-
         {goTo:12.5,duration:100,swingOut:50},
         {goTo:25,duration:100,swingIn:100,doneFunc:()=>wheelFuncs.playTickSound() }, //Cut...
-        {goTo:-50,duration:500,swingIn:50,swingOut:50,append:1},
-        {goTo:525,duration:250,swingIn:50,swingOut:50,append:1,playTick:1}, //...TWO BITS! :O
+        {goTo:-50,duration:500,swingIn:50,swingOut:50,append:1,doneFunc:()=>{playSound(drmRoll,400);setTimeout(()=>playSound(cymbalSfx),100)}}, //Wow, that's weird delay :P
+        {goTo:525,duration:250,swingIn:50,swingOut:50,append:1}, //...TWO BITS! :O
     ],
     backCrack:[
         {goTo:12.5,duration:700,swingIn:50,swingOut:50},
@@ -61,8 +61,9 @@ var wheelAnimations = {
         //Return again
         {goTo:0,duration:500,swingOut:100},
         //Swing left...
-        {goTo:-50,duration:1000,swingOut:50,swingIn:50,append:1},
+        {goTo:-50,duration:1000,swingOut:50,swingIn:50,append:1,doneFunc:()=>setTimeout(()=>playSound(drmRoll,1000),1000)},
         //Whee!
-        {goTo:450,duration:2000,swingIn:100,playTick:1,append:true}
+        {goTo:450,duration:2000,swingIn:100,playTick:1,append:true},
+        {goTo:0,duration:1,append:true,doneFunc:()=>playSound(cymbalSfx)},
     ]
 };

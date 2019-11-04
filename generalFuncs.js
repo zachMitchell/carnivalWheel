@@ -109,3 +109,10 @@ function oldSwing(sum,pieces,strength = .1){
 
     return result;
 }
+
+function playSound(audioElement,stopAfter=-1,startAt=0){
+    audioElement.pause();
+    audioElement.currentTime = startAt;
+    audioElement.play();
+    if(stopAfter > -1) setTimeout(()=>audioElement.pause(),stopAfter);
+}

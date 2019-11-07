@@ -25,6 +25,7 @@ var wheelFuncs = {
         if(tickSound.paused) tickSound.play();
     },
 
+    //An "organic" spin (a.k.a not an animation). Spin the wheel based on a variety of values you could change with a real wheel. 
     spin:function(wInst,speed = 2,pegPower = .02,axelDrag = .001){
         clearInterval(wInst.loop);
             wInst.percentIncrease = speed;
@@ -44,6 +45,41 @@ var wheelFuncs = {
         },16.6);
     },
 
+
+    playAnimationWithRng:function(wheelInst,targetAnimation,reset,rig = -1){
+        //Alright, let's reference all objects in the array except the ones where rndGoTo == true:
+        var animationRef = [];
+        var pieceCount = wheelInst.wheel.wheelGroup.pieces.length;
+        for(var i of targetAnimation){
+            if(i.rndGoTo){
+                animationRef.push(setObjProperties({},i));
+                animationRef[animationRef.length-1].goTo += 100/pieceCount * Math.floor(Math.random()*pieceCount);
+            }
+            else animationRef.push(i);
+        }
+
+        //If we rig the wheel, just add it to our compiled animation:
+        if(typeof rig == "number" && rig > -1){
+            var targetPercent = (100/pieceCount) * rig;
+            animationRef.push(
+                {goTo:0,append:1,duration:1000,preFunc:()=>this.resetNegativeNumbers(wheelInst),doneFunc:()=>{playSound(whoopSfx),playSound(drmRoll,700)}},
+                {goTo:-100 -(100-targetPercent),swingIn:30,duration:500,playTick:1,doneFunc:()=>playSound(cymbalSfx)});
+        }
+
+        wheelInst.currAnimation = this.animate({wheel:wheelInst,sectors:animationRef},reset,()=>console.log('yay!'));
+        wheelInst.currAnimation.next();
+
+    },
+    resetNegativeNumbers:function(wheel){
+        //If we hit a negative number, invert it:
+        if(wheel.percent < 0){
+            wheel.percent = 0 - wheel.percent;
+            while(wheel.percent > 100){
+                wheel.percent-=100;
+            }
+        }
+    },
+
     /*Move the spinner in different directions dynamically based on a configuration provided:
     The config is an object with the following properties:
     wheel: the target wheel instance
@@ -52,19 +88,23 @@ var wheelFuncs = {
         duration - duration in milliseconds - float
         playTick - allow tick to be detected - bool
         append - append percent instead of exact location - bool
+        preFunc - function that's run before the wheel starts moving.
         doneFunc - function to execute upon completion
         swingIn - (Optional) slowly ramp up to normal speed for (percent value) of the beginning of the sector - float
         swingOut - (Optional) slam the brakes to stop the animation for (percent value) of the sector - float
+        rndGoTo - (optional) used as a flag for playAnimationWithRng(). The wheel will stop in designated location + random percentage based on wheel piece count. - bool
     
     The end location as of this writing is only approximate due to how the animation is broken down.
 
     ...The fades were a pain to make, let's just put it at that X(
     */
-    animate:function*(config,reset = false){
+    animate:function*(config,reset = false,doneFunc){
         if(reset) this.reset(config.wheel,true,true);
 
         //Loop until we pass through everything:
         for(var i of config.sectors){
+            if(i.preFunc) i.preFunc();
+
             config.wheel.currMilliseconds = 0;
             var previousPercent = config.wheel.percent;
             var swingNumbers = {};
@@ -120,8 +160,12 @@ var wheelFuncs = {
                     (i.goTo - previousPercent) / currSpeed;
 
                 config.wheel.percent+=targetChange;
-                if(config.wheel.percent > 100)
-                    config.wheel.percent -= 100;
+
+                if(config.wheel.percent > 100){
+                    while(config.wheel.percent > 100)
+                        config.wheel.percent -= 100;
+                }
+
                 config.wheel.wheel.draw(config.wheel.percent,targetChange < 0);
                 var currTick = config.wheel.wheel.pegSet.detectPoint();
 
@@ -146,6 +190,9 @@ var wheelFuncs = {
             },16.6);
             yield; //To be honest, we don't need to return anything special, we just need to know when to proceed to the next section.
         }
+        //Finally, execute whatever you wanna do next:
+        if(doneFunc) doneFunc();
     }
+
 
 }

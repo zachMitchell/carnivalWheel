@@ -1,7 +1,9 @@
 //Made by Zachary Mitchell in 2019!
 //A dump of functions that could be used in other things
 
-function setObjProperties(targetObj,appendage){
+//Create an object that has values in one line of your code. (e.g a new dom element with values already set)
+//...or just clone an object
+function setObjProperties(targetObj={},appendage) {
     for(var i in appendage)
         targetObj[i] = appendage[i];
     return targetObj;

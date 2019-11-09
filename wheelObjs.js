@@ -12,7 +12,7 @@ var wheelObjs = {
         this.color = color;
         this.fraction = fraction;
         this.text = text;
-        this.render = function(){
+        this.render = function(highlight = false){
             this.bitmap.width = wh;
             this.bitmap.height = wh/1.9;
             var ctx = this.bitmap.getContext("2d");
@@ -29,19 +29,25 @@ var wheelObjs = {
                 and have text still readable (and make the wheel more stylish)*/
                 let brightColor = false;
 
-                for(var i of this.color){
-                    //Intentionally left the comparison smaller than the actual brightness to keep vibrant colors
-                    if(i*1.25 > 255){
-                        brightColor = true;
-                        break;
+                //Highlight yellow, this piece is a winner!
+                if(highlight) resultStroke = resultfill = 'rgb(255,255,0';
+
+                else{
+                    for(var i of this.color){
+                        //Intentionally left the comparison smaller than the actual brightness to keep vibrant colors
+                        if(i*1.25 > 255){
+                            brightColor = true;
+                            break;
+                        }
+                    }
+
+                    for(var i of this.color){
+                        resultfill+=(start?'rgb(':',')+i;
+                        resultStroke+=(start?'rgb(':',')+Math.floor(i*(brightColor?.75:1.5));
+                        start = false;
                     }
                 }
-                
-                for(var i of this.color){
-                    resultfill+=(start?'rgb(':',')+i;
-                    resultStroke+=(start?'rgb(':',')+Math.floor(i*(brightColor?.75:1.5));
-                    start = false;
-                }
+                //Complete the string for stroke and fill; initialize both.
                 ctx.fillStyle=resultfill+')';
                 ctx.strokeStyle=resultStroke+')';
             }
@@ -66,17 +72,19 @@ var wheelObjs = {
                 renderText = this.text.substr(0,12);
             }
 
-
-            ctx.font=(wh * sizePercent)+'px Arial';
-            ctx.fillStyle = ctx.strokeStyle;
-            ctx.translate((wh/2)*1.25,(wh/2)*.95);
-            //We're using a negative number here because the rotation system is counter clockwise
-            ctx.rotate((0- (360 / this.fraction / 2)) * Math.PI/180);
-            ctx.fillText(renderText,0,0);
-
-            //Reset text:
-            ctx.rotate( (360 / this.fraction / 2) * Math.PI/180);
-            ctx.translate(0- (wh/2), 0- (wh/2) );
+            //The highlight will be to brilliant to see text :')
+            if(!highlight){
+                ctx.font=(wh * sizePercent)+'px Arial';
+                ctx.fillStyle = ctx.strokeStyle;
+                ctx.translate((wh/2)*1.25,(wh/2)*.95);
+                //We're using a negative number here because the rotation system is counter clockwise
+                ctx.rotate((0- (360 / this.fraction / 2)) * Math.PI/180);
+                ctx.fillText(renderText,0,0);
+    
+                //Reset text:
+                ctx.rotate( (360 / this.fraction / 2) * Math.PI/180);
+                ctx.translate(0- (wh/2), 0- (wh/2) );
+            }
         }
     
     },
@@ -96,7 +104,12 @@ var wheelObjs = {
     
         this.pieces = typeof pieces == "number"?wheelObjs.generatePieces(this.masterCanvas.height,pieces,setColor):pieces;
         this.percent = 0; //Where the wheel actually is.
-        this.drawPieces = ()=>this.pieces.forEach(e=>e.render()); //Should only be done when needed.
+        //Place in as many bool arguments as you want to highlight some pieces.
+        this.drawPieces = function(){
+            for(var i = 0;i<this.pieces.length;i++){
+                this.pieces[i].render(arguments[i]);
+            }
+         } //Should only be done when needed.
     
         this.renderWheel = function(){
             var ctx = this.wheelCanvas.getContext('2d');
@@ -117,11 +130,11 @@ var wheelObjs = {
             var wh = this.spinCanvas.height;
             ctx.clearRect(0,0,wh,wh);
             ctx.translate(wh/2,wh/2);
-            ctx.rotate((360 * this.percent * .01) * Math.PI / 180);
+            ctx.rotate(360 * (this.percent - 25) * .01 * Math.PI / 180); //subtract 90 degrees because the wheel is rendered sideways
             ctx.drawImage(this.wheelCanvas,0 - (wh/2), 0 - (wh/2));
     
             //Cleanup for next time:
-            ctx.rotate((360 * (0 - this.percent) * .01) * Math.PI / 180);
+            ctx.rotate((360 * (0 - (this.percent - 25)) * .01) * Math.PI / 180);
             ctx.translate((0 - (wh/2)),(0 - (wh/2)));
         }
     
@@ -163,15 +176,16 @@ var wheelObjs = {
         this.rotateCanvas = document.createElement('canvas');
         this.count = count;
         this.rotatePercent = 0;
-
+        this.lightPattern=[];
         this.configure = function(canvasSize = this.canvasSize, count = this.count){
             var ctx = this.canvas.getContext('2d');
             this.canvas.width = this.canvas.height = canvasSize;
             this.count = count;
+            ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
 
             ctx.translate(canvasSize / 2,canvasSize / 2);
-            ctx.fillStyle='#000000';
             for(var i = 0; i<count;i++){
+                ctx.fillStyle = ctx.strokeStyle = this.lightPattern[i]?'#FFFF00':'#000000'; //Light up the peg if it's address in lightPattern is true.
                 ctx.beginPath();
                 ctx.arc(canvasSize / 2.2,0, canvasSize / 60 ,0,2*Math.PI);
                 ctx.stroke();

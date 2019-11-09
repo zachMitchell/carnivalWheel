@@ -79,3 +79,122 @@ var wheelAnimations = {
         {goTo:0,duration:250,append:true,doneFunc:()=>playSound(cymbalSfx)},
     ]
 };
+
+/*Display fun peg lighting when the wheel is idle. Each function has two arguments:
+    idleInstance: that object on the bottom of the code there. It holds current animation and the wheel responsible for it.
+    doneFunc: what to do after the animation is complete.
+*/
+var pegAnimations = {
+    _drawPegs:wheel=>{
+        wheel.pegSet.configure();
+        wheel.draw();
+    },
+    _clearPegs:wheel=>{
+        //Clear the array:
+        wheel.pegSet.lightPattern = [];
+        pegAnimations._drawPegs(wheel);
+    },
+
+    //loop around the wheel once
+    lapSingle:function*(idleInstance,doneFunc){
+        var targetPegs = idleInstance.wheel.pegSet;
+        targetPegs.lightPattern = [];
+        for(var i = 0;i<targetPegs.count;i++){
+            targetPegs.lightPattern[i] = true;
+            if(i>0) targetPegs.lightPattern[i-1] = false;
+            pegAnimations._drawPegs(idleInstance.wheel);
+            //Move after this alloted amount of time:
+            setTimeout(()=>idleInstance.generator.next(),40);
+            yield;
+        }
+        pegAnimations._clearPegs(idleInstance.wheel);
+        doneFunc?doneFunc():0;
+    },
+    //Flicker odd and even lights:
+    flicker:function*(idleInstance,doneFunc){
+        var targetPegs = idleInstance.wheel.pegSet;
+        targetPegs.lightPattern = [];
+        for(var i = 0;i<10;i++){
+            for(var j=0;j<targetPegs.count;j++){
+                targetPegs.lightPattern[j] = (j+i)%2==1;
+            }
+            pegAnimations._drawPegs(idleInstance.wheel);
+            setTimeout(()=>idleInstance.generator.next(),500);
+            yield;
+        }
+        pegAnimations._clearPegs(idleInstance.wheel);
+        doneFunc?doneFunc():0;
+    },
+    //loop around the wheel with two lights crossing roads:
+    lapDouble:function*(idleInstance,doneFunc){
+        var targetPegs = idleInstance.wheel.pegSet;
+        targetPegs.lightPattern = [];
+
+        targetPegs.lightPattern[0] = true;
+        targetPegs.lightPattern[targetPegs.count-1] = true;
+
+        var frontPlacement = 0, backPlacement = targetPegs.count-1;
+        var addSubtract = true;
+        for(var i = 0;i<2;i++){
+            do{
+                pegAnimations._drawPegs(idleInstance.wheel);
+                setTimeout(()=>idleInstance.generator.next(),20);
+                yield;
+
+                targetPegs.lightPattern[frontPlacement] = false;
+                targetPegs.lightPattern[backPlacement] = false;
+                if(addSubtract){
+                    frontPlacement++;
+                    backPlacement--;
+                }
+                else{
+                    frontPlacement--;
+                    backPlacement++;
+                }
+                targetPegs.lightPattern[frontPlacement] = true;
+                targetPegs.lightPattern[backPlacement] = true;
+            }while(!targetPegs.lightPattern[0] && !targetPegs.lightPattern[targetPegs.count-1]);
+            addSubtract = false;  
+        }
+        pegAnimations._clearPegs(idleInstance.wheel);
+        doneFunc?doneFunc():0;
+    },
+    //Light up everything like a water dropplet
+    ripple:function*(idleInstance,doneFunc){
+        var targetPegs = idleInstance.wheel.pegSet;
+        targetPegs.lightPattern = [];
+
+        var lightUp = true;
+
+        for(var i = 0;i<2;i++){
+            var frontPlacement = 0, backPlacement = targetPegs.count-1;
+            targetPegs.lightPattern[0] = lightUp;
+            targetPegs.lightPattern[targetPegs.count-1] = lightUp;
+            for(var j = 0;j<targetPegs.count/2;j++){
+                pegAnimations._drawPegs(idleInstance.wheel);
+                setTimeout(()=>idleInstance.generator.next(),40);
+                yield;
+
+                frontPlacement++;
+                backPlacement--;
+
+                targetPegs.lightPattern[frontPlacement] = lightUp;
+                targetPegs.lightPattern[backPlacement] = lightUp;
+            }
+            lightUp = false;  
+        }        
+
+        pegAnimations._clearPegs(idleInstance.wheel);
+        doneFunc?doneFunc():0;
+    }
+
+}
+
+function pegIdleInstance(wheel){
+    this.generator = undefined;
+    this.wheel = wheel;
+    this.playAnimation = (animtion,doneFunc)=>{
+        this.generator = animtion(this,doneFunc);
+        this.generator.next();
+    }
+}

@@ -30,6 +30,7 @@
             var testImage = document.createElement('img');
             var wheel;
             var wheelThing;
+            var pegIdleTest;
             testImage.onload=()=>{
                 wheel = new wheelObjs.wheel(300,7,testImage,['#FF0000','#00FF00','#0000FF']);
                 wheel.wheelGroup.pieces.forEach((e,i)=>{
@@ -39,6 +40,7 @@
                 mainArea.appendChild(wheel.coreCanvas);
                 wheel.draw(percent);
                 wheelThing = new wheelFuncs.wheelInstance(wheel);
+                pegIdleTest = new pegIdleInstance(wheel);
             }
             testImage.src='assets/smileHappy.svg';
 

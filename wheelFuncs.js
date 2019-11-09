@@ -42,7 +42,7 @@ var wheelFuncs = {
             }
             wInst.lastTick = currTick;
             if(wInst.percentIncrease <= 0) clearInterval(wInst.loop);
-        },16.6);
+        },settings.frameRate);
     },
 
 
@@ -117,7 +117,7 @@ var wheelFuncs = {
                     //Create the numbers to do a proper swing. If it's swingOut, enter the results in reverse:
                     var swingDur = i.duration * (i['swing'+e] * .01);
                     var percentPercent = (i.goTo - (i.append ? 0 : previousPercent)) * (i['swing'+e] * .01); //A percent of our total time.
-                    swingNumbers[e.toLowerCase()] = index?swing(percentPercent,swingDur/16.6).reverse():swing(percentPercent,swingDur/16.6);
+                    swingNumbers[e.toLowerCase()] = index?swing(percentPercent,swingDur/settings.frameRate).reverse():swing(percentPercent,swingDur/settings.frameRate);
                     swingProgress[e.toLowerCase()] = 0;
                     // console.log(['swingDur',swingDur,swingNumbers[e.toLowerCase()]]);
                     speedEquation-=percentPercent;
@@ -125,13 +125,13 @@ var wheelFuncs = {
             });
 
             //slash down to frames when done:
-            speedEquation/=16.6;
+            speedEquation/=settings.frameRate;
 
             // console.log([(i.goTo - previousPercent) / i.duration,previousPercent,i.goTo,i.duration]);
             //Nested function that will iterate within this scope:
             config.wheel.loop = setInterval(()=>{
                 var currSpeed = speedEquation;
-                config.wheel.currMilliseconds+=16.6;
+                config.wheel.currMilliseconds+=settings.frameRate;
                 var targetChange = 0;
                 var fadeIO = false;
 
@@ -187,7 +187,7 @@ var wheelFuncs = {
                     config.wheel.currAnimation.next();
                 }
 
-            },16.6);
+            },settings.frameRate);
             yield; //To be honest, we don't need to return anything special, we just need to know when to proceed to the next section.
         }
         //Finally, execute whatever you wanna do next:

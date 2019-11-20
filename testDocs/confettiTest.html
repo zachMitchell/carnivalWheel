@@ -1,8 +1,18 @@
 <!DOCTYPE html>
 <html>
     <body>
+        <canvas id='testCanvas' style='border:1px solid black' width='600' height='600'></canvas>
+        <p id='debugThing'></p>
         <audio src='../assets/noiseMaker.mp3'></audio>
-        <canvas></canvas>
-        <script></script>
+        <script src='../colorTools.js'></script>
+        <script src='../colorPresets.js'></script>
+        <script src='../confetti.js'></script>
+        <script>
+            var newPrompt = new confetti.prompt(testCanvas);
+            prompt.currInterval = setInterval(()=>{
+                newPrompt.breathe();
+                newPrompt.render();
+            },16.6);
+        </script>
     </body>
 </html>

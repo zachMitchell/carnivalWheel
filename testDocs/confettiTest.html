@@ -3,16 +3,46 @@
     <body>
         <canvas id='testCanvas' style='border:1px solid black' width='600' height='600'></canvas>
         <p id='debugThing'></p>
-        <audio src='../assets/noiseMaker.mp3'></audio>
+        <audio src='../assets/noiseMaker.mp3' id='noiseMaker'></audio>
         <script src='../colorTools.js'></script>
         <script src='../colorPresets.js'></script>
+        <script src='../generalFuncs.js'></script>
         <script src='../confetti.js'></script>
         <script>
-            var newPrompt = new confetti.prompt(testCanvas);
-            prompt.currInterval = setInterval(()=>{
-                newPrompt.breathe();
-                newPrompt.render();
-            },16.6);
+            // var newPrompt = new confetti.prompt(testCanvas);
+            // prompt.currInterval = setInterval(()=>{
+            //     newPrompt.breathe();
+            //     newPrompt.render();
+            // },16.6);
+            
+            var testConfetti,
+                confettiPieces = [],
+                loadedImgs = 0,
+                assetChars = 'ROYGBIV'; //basically like an array
+
+            for(var i of assetChars){
+                confettiPieces.push(document.createElement('img'));
+                confettiPieces[confettiPieces.length-1].src = '../assets/confetti/conf'+i+'.svg';
+                confettiPieces[confettiPieces.length-1].onload = function(){
+                    console.log('ok!');
+                    loadedImgs++;
+                    if(loadedImgs == assetChars.length){
+                        testConfetti = new confetti.confettiObj(testCanvas,confettiPieces);
+                        
+                        //Testbed to know what I'm doing with rotating confetti XP
+                        // var ctx = testCanvas.getContext('2d');
+                        // ctx.translate(300,300);
+                        // ctx.rotate(90 * (Math.PI/180));
+                        // ctx.drawImage(confettiPieces[0],-50,-50);
+                    }
+                }
+            }
+
+            function go(pieceCount,duration,frameRate){
+                playSound(noiseMaker);
+                testConfetti.currAnimation = testConfetti.throwUpwards(pieceCount,duration,frameRate);
+                testConfetti.currAnimation.next();
+            }
         </script>
     </body>
 </html>

@@ -28,7 +28,10 @@ var wheelFuncs = {
     //An "organic" spin (a.k.a not an animation). Spin the wheel based on a variety of values you could change with a real wheel. 
     spin:function(wInst,speed = 2,pegPower = .02,axelDrag = .001){
         clearInterval(wInst.loop);
-            wInst.percentIncrease = speed;
+            var frameRateChange = (16.6 / settings.frameRate);
+            wInst.percentIncrease = speed * frameRateChange;
+            pegPower*=frameRateChange;
+            axelDrag*=frameRateChange;
             wInst.loop = setInterval(()=>{
             wInst.wheel.draw(wInst.percent);
             wInst.percent+=wInst.percentIncrease;

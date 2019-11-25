@@ -11,7 +11,6 @@ function setObjProperties(targetObj={},appendage) {
 
 /*return an array of numbers that add up to the approximate number requested... with a twist
 The numbers go up like a hill/curve upwards instead of an exactly divided piece*/
-//Intended for use with sums >=1. I think it would theoretically work with other numbers (like decimals < 1), but it most likely wouldn't swing.
 function swing(sum,pieces){
     if(pieces % 1 > 0) pieces = Math.ceil(pieces);
 
@@ -21,6 +20,7 @@ function swing(sum,pieces){
         negativeSum = true;
         sum = 0-sum;
     }
+
     else if(sum == 0){
         var resultArray = [];
         for(var i=0;i<pieces;i++)
@@ -29,6 +29,17 @@ function swing(sum,pieces){
         return resultArray;
     }
 
+    //For optimal swaying, we need the number to be at least >= 1. This is solved by multiplying by 10 until it's ready.
+    var decimalEquation = 1;
+    while(sum > 0 && sum < 1){
+        sum *= 10;
+        decimalEquation*=.1;
+    }
+
+    // I forgot to document this step, so here's a snippet from an experiment I did:
+
+    /*count up until we reach total. If we can't go higher and there's numbers left over, place the remainder in the array (sorted).
+    Split into X number of clumps. If the number of clumps > actual numbers, divide current results, double array size.*/
     var numArray = [];
     var forSum = 0;
     for(var i=1; forSum + i < sum; i++){
@@ -87,7 +98,19 @@ function swing(sum,pieces){
         
     }
 
-    return negativeSum? resultArray.map(e=>0-e):resultArray;
+    //We're going to do allot of array mapping on this stage if conditions are weird. One function will return the numbers to what we want.
+    if(negativeSum || decimalEquation !==1){
+        //Nested function that depends on negativeSum and decimalEquation
+        var normalizeNumbers = function(e){
+            if(negativeSum) e = 0-e;
+            if(decimalEquation !==1) e *= decimalEquation
+            
+            return e;
+        }
+        resultArray = resultArray.map(normalizeNumbers);
+    }
+
+    return resultArray;
 }
 
 //Tried this approach, didn't work as nicely, but fun to watch :P

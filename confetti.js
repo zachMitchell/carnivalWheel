@@ -51,7 +51,7 @@ var confetti = {
         this.currAnimation = undefined;
 
         //Exactly what you might expect.
-        this.throwUpwards = function*(pieceCount = 30, duration=1000, frameRate = 16.6){
+        this.throwUpwards = function*(frameRate = 16.6, pieceCount = 30, duration=1000){
             var ctx = srcCanvas.getContext('2d'),
                 pieceArray = [];
             //Randomly get colors:
@@ -118,7 +118,41 @@ var confetti = {
         Prompt is created and displayed on screen
         when spacebar is pressed, CONFETTI! (whee!)
     */
-    confettiInstance:function(){
+    confettiInstance:function(srcCanvas = document.createElement('canvas'), assets = [], sfx = undefined, frameRate = 16.6){
+        this.prompt = new confetti.prompt(srcCanvas);
+        this.confettiObj = new confetti.confettiObj(srcCanvas, assets);
+        this.frameRate = frameRate;
+        this.sfx = sfx;
+
+        //To interface with the DOM, we need to keep track of the functions in use.
+        this.bodyListener = e=>{
+
+            if(e.code == 'Space'){
+                e.preventDefault()
+                this.deactivate();
+                if(sfx) playSound(sfx);
+                this.confettiObj.currAnimation = this.confettiObj.throwUpwards(this.frameRate);
+                this.confettiObj.currAnimation.next();
+            }
+
+        }
+
+        this.activate = function(){
+            document.body.addEventListener('keydown',this.bodyListener);
+            this.prompt.colorPercent = 0;
+                this.prompt.breatheIn = true;
+
+                this.prompt.currInterval = setInterval(()=>{
+                    this.prompt.breathe(1 * (frameRate/16.6) );
+                    this.prompt.render();
+
+                },this.frameRate);
+        }
+
+        this.deactivate = function(){
+            document.body.removeEventListener('keydown',this.bodyListener);
+            clearInterval(this.prompt.currInterval);
+        }
 
     }
 

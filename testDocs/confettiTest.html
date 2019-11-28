@@ -27,7 +27,7 @@
                     console.log('ok!');
                     loadedImgs++;
                     if(loadedImgs == assetChars.length){
-                        testConfetti = new confetti.confettiObj(testCanvas,confettiPieces);
+                        testConfetti = new confetti.confettiInstance(testCanvas,confettiPieces,noiseMaker);
                         
                         //Testbed to know what I'm doing with rotating confetti XP
                         // var ctx = testCanvas.getContext('2d');
@@ -38,11 +38,11 @@
                 }
             }
 
-            function go(pieceCount,duration,frameRate){
-                playSound(noiseMaker);
-                testConfetti.currAnimation = testConfetti.throwUpwards(pieceCount,duration,frameRate);
-                testConfetti.currAnimation.next();
-            }
+            // function go(pieceCount,duration,frameRate){
+            //     playSound(noiseMaker);
+            //     testConfetti.currAnimation = testConfetti.throwUpwards(pieceCount,duration,frameRate);
+            //     testConfetti.currAnimation.next();
+            // }
         </script>
     </body>
 </html>

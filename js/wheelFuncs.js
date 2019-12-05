@@ -22,7 +22,7 @@ var wheelFuncs = {
     playTickSound:(volume = 1)=>{
         tickSound.volume = volume;
         tickSound.currentTime = 0;
-        if(tickSound.paused) tickSound.play();
+        playSound(tickSound);
     },
 
     //An "organic" spin (a.k.a not an animation). Spin the wheel based on a variety of values you could change with a real wheel. 

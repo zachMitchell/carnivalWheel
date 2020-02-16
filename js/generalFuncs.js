@@ -134,16 +134,3 @@ function oldSwing(sum,pieces,strength = .1){
 
     return result;
 }
-
-function playSound(audioElement,stopAfter=-1,startAt=0){
-    audioElement.pause();
-    clearTimeout(audioElement.dataset.timeout);
-    var pause = ()=>audioElement.pause();
-    /*For Safari's sake, we'll stop the timer a few milliseconds before it's supposed to end.
-    This keeps it in memory and prevents a blob from being read all the way.*/
-    audioElement.dataset.timeout = setTimeout(pause,stopAfter > -1?stopAfter: (audioElement.duration * 1000) -10);
-    if(audioElement.currentTime !== startAt)
-    audioElement.currentTime = startAt;
-    console.log(audioElement.currentTime);
-    audioElement.play();
-}

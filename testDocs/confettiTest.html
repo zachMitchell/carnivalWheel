@@ -3,10 +3,10 @@
     <body>
         <canvas id='testCanvas' style='border:1px solid black' width='600' height='600'></canvas>
         <p id='debugThing'></p>
-        <audio src='../assets//noiseMaker.mp3' id='noiseMaker'></audio>
         <script src='../js/colorTools.js'></script>
         <script src='../js/colorPresets.js'></script>
         <script src='../js/generalFuncs.js'></script>
+        <script src='../js/simpleAudio.js'></script>
         <script src='../js/confetti.js'></script>
         <script>
             // var newPrompt = new confetti.prompt(testCanvas);
@@ -14,7 +14,6 @@
             //     newPrompt.breathe();
             //     newPrompt.render();
             // },16.6);
-            
             var testConfetti,
                 confettiPieces = [],
                 loadedImgs = 0,
@@ -27,7 +26,7 @@
                     console.log('ok!');
                     loadedImgs++;
                     if(loadedImgs == assetChars.length){
-                        testConfetti = new confetti.confettiInstance(testCanvas,confettiPieces,noiseMaker);
+                        testConfetti = new confetti.confettiInstance(testCanvas,confettiPieces,new simpleAudio.sound('../assets/audio/noiseMaker.mp3'));
                         
                         //Testbed to know what I'm doing with rotating confetti XP
                         // var ctx = testCanvas.getContext('2d');
@@ -39,7 +38,7 @@
             }
 
             // function go(pieceCount,duration,frameRate){
-            //     playSound(noiseMaker);
+            //     simpleAudio.play(noiseMaker);
             //     testConfetti.currAnimation = testConfetti.throwUpwards(pieceCount,duration,frameRate);
             //     testConfetti.currAnimation.next();
             // }

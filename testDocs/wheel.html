@@ -14,6 +14,7 @@
         <p id='pegPercent'></p>
         <p id='cTick'></p>
         <p id='pIncrease'></p>
+        <script src='../js/simpleAudio.js'></script>
         <script src='../js/settings.js'></script>
         <script src='../js/generalFuncs.js'></script>
         <script src='../js/colorTools.js'></script>
@@ -55,11 +56,26 @@
             // wheelGroup.renderSpin();
             // wheelGroup.draw();
             // mainArea.appendChild(wheelGroup.spinCanvas);
+
+            //Load audio snippets:
+            (()=>{
+                var rootPath = '../assets/audio/';
+                var srcList = {
+                    tickSound:'tick5.mp3',
+                    drmRoll:'DrumRollQuick.mp3',
+                    cymbalSfx:'Cymbal.mp3',
+                    wooshSmack:'wooshSmack.mp3',
+                    whoopSfx:'Whoop.mp3'
+                };
+                for(var i in srcList)
+                    window[i] = new simpleAudio.sound(rootPath+srcList[i]);
+                // simpleAudio.options.limit = 4;
+            })()
         </script>
-        <audio src="../assets/audio/tick5.mp3" id='tickSound'/>
+        <!-- <audio src="../assets/audio/tick5.mp3" id='tickSound'/>
         <audio src="../assets/audio/DrumRollQuick.mp3" id='drmRoll'/>
         <audio src="../assets/audio/Cymbal.mp3" id='cymbalSfx'/>
         <audio src="../assets/audio/wooshSmack.mp3" id='wooshSmack'/>
-        <audio src="../assets/audio/Whoop.mp3" id='whoopSfx'/>
+        <audio src="../assets/audio/Whoop.mp3" id='whoopSfx'/> -->
     </body>
 </html>

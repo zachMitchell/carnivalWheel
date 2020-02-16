@@ -5,7 +5,7 @@ The majority of this file will just be raw data. For a reference on how to make 
 //Reference: on an organic spin (wheelFuncs.spin() defaults), it takes about 4.25 rotations and 9.33 seconds for the wheel to stop*
 var wheelAnimations = {
     inverseSpin:[
-        {goTo:800,duration:5000,swingIn:100,playTick:1,append:true,rndGoTo:1,doneFunc:()=>playSound(cymbalSfx)}
+        {goTo:800,duration:5000,swingIn:100,playTick:1,append:true,rndGoTo:1,doneFunc:()=>simpleAudio.play(cymbalSfx)}
     ],
     fakeSpin:[
         {goTo:425,duration:9000,swingOut:100,playTick:1,append:true,rndGoTo:1}
@@ -22,7 +22,7 @@ var wheelAnimations = {
         {goTo:25,duration:100,swingIn:100,doneFunc:()=>wheelFuncs.playTickSound() }, //Hair-
         {goTo:12.5,duration:100,swingOut:50},
         {goTo:25,duration:100,swingIn:100,doneFunc:()=>wheelFuncs.playTickSound() }, //Cut...
-        {goTo:-50,duration:500,swingIn:50,swingOut:50,append:1,doneFunc:()=>{playSound(drmRoll,400);setTimeout(()=>playSound(cymbalSfx),100)}}, //Wow, that's weird delay :P
+        {goTo:-50,duration:500,swingIn:50,swingOut:50,append:1,doneFunc:()=>{simpleAudio.play(drmRoll,.4);setTimeout(()=>simpleAudio.play(cymbalSfx),100)}}, //Wow, that's weird delay :P
         {goTo:525,duration:250,swingIn:50,swingOut:50,append:1,rndGoTo:1}, //...TWO BITS! :O
     ],
     backCrack:[
@@ -61,22 +61,22 @@ var wheelAnimations = {
         //Return again
         {goTo:0,duration:500,swingOut:100},
         //Swing left...
-        {goTo:-50,duration:1000,swingOut:50,swingIn:50,append:1,doneFunc:()=>setTimeout(()=>playSound(drmRoll,1000),1000)},
+        {goTo:-50,duration:1000,swingOut:50,swingIn:50,append:1,doneFunc:()=>setTimeout(()=>simpleAudio.play(drmRoll,1),1000)},
         //Whee!
         {goTo:450,duration:2000,swingIn:100,playTick:1,append:true},
-        {goTo:0,duration:1,append:true,rndGoTo:1,doneFunc:()=>playSound(cymbalSfx)},
+        {goTo:0,duration:1,append:true,rndGoTo:1,doneFunc:()=>simpleAudio.play(cymbalSfx)},
     ],
     smack:[
-        {goTo:50,duration:200,rndGoTo:1,append:true,preFunc:()=>playSound(wooshSmack)},
+        {goTo:50,duration:200,rndGoTo:1,append:true,preFunc:()=>simpleAudio.play(wooshSmack)},
         {goTo:-50,duration:400,append:true,swingOut:100},
         {goTo:50,duration:400,append:true,swingIn:100,doneFunc:()=>wheelFuncs.playTickSound()},
         {goTo:-25,duration:200,append:true,swingOut:100},
-        {goTo:25,duration:200,append:true,swingIn:100,doneFunc:()=>wheelFuncs.playTickSound()},
+        {goTo:25,duration:200,append:true,swingIn:100,doneFunc:()=>wheelFuncs.playTickSound(.7)},
         {goTo:-12.5,duration:100,append:true,swingOut:100},
-        {goTo:12.5,duration:100,append:true,swingIn:100,doneFunc:()=>wheelFuncs.playTickSound()},
+        {goTo:12.5,duration:100,append:true,swingIn:100,doneFunc:()=>wheelFuncs.playTickSound(.4)},
         {goTo:-6.25,duration:50,append:true,swingOut:100},
-        {goTo:6.25,duration:50,append:true,swingIn:100,doneFunc:()=>wheelFuncs.playTickSound()},
-        {goTo:0,duration:250,append:true,doneFunc:()=>playSound(cymbalSfx)},
+        {goTo:6.25,duration:50,append:true,swingIn:100,doneFunc:()=>wheelFuncs.playTickSound(.4)},
+        {goTo:0,duration:250,append:true,doneFunc:()=>simpleAudio.play(cymbalSfx)},
     ]
 };
 

@@ -1,4 +1,4 @@
-//Made by Zachary Mitchell in 2019!
+//Made by Zachary Mitchell from 2019-2020!
 //These are the things you can do with a wheel object. This assumes wheelObjs.js is included (It's the core reason for this file's existence).
 
 var wheelFuncs = {
@@ -20,9 +20,7 @@ var wheelFuncs = {
     },
 
     playTickSound:(volume = 1)=>{
-        tickSound.volume = volume;
-        tickSound.currentTime = 0;
-        playSound(tickSound);
+        simpleAudio.play(tickSound,undefined,0,volume);
     },
 
     //An "organic" spin (a.k.a not an animation). Spin the wheel based on a variety of values you could change with a real wheel. 
@@ -65,8 +63,8 @@ var wheelFuncs = {
         if(typeof rig == "number" && rig > -1){
             var targetPercent = (100/pieceCount) * rig;
             animationRef.push(
-                {goTo:0,append:1,duration:1000,preFunc:()=>this.resetNegativeNumbers(wheelInst),doneFunc:()=>{playSound(whoopSfx),playSound(drmRoll,700)}},
-                {goTo:-100 -(100-targetPercent),swingIn:30,duration:500,playTick:1,doneFunc:()=>playSound(cymbalSfx)});
+                {goTo:0,append:1,duration:1000,preFunc:()=>this.resetNegativeNumbers(wheelInst),doneFunc:()=>{simpleAudio.play(whoopSfx);simpleAudio.play(drmRoll,.7)}},
+                {goTo:-100 -(100-targetPercent),swingIn:30,duration:500,playTick:1,doneFunc:()=>simpleAudio.play(cymbalSfx)});
         }
 
         wheelInst.currAnimation = this.animate({wheel:wheelInst,sectors:animationRef},reset,()=>console.log('yay!'));

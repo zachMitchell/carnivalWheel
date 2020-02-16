@@ -3,7 +3,7 @@
 When the wheel is done doing it's thing, the user gets an opportunity for some euphoria - confetti!
 This file will focus soley on that.*/
 
-//Dependencies: colorTools.js,colorPresets.js,generalFuncs.js
+//Dependencies: colorTools.js,colorPresets.js,generalFuncs.js,simpleAudio.js
 var confetti = {
     prompt:function(primaryCanvas = document.createElement('canvas')){
         this.currColor;
@@ -130,7 +130,7 @@ var confetti = {
             if(e.code == 'Space'){
                 e.preventDefault()
                 this.deactivate();
-                if(sfx) playSound(sfx);
+                if(sfx) simpleAudio.play(sfx);
                 this.confettiObj.currAnimation = this.confettiObj.throwUpwards(this.frameRate);
                 this.confettiObj.currAnimation.next();
             }

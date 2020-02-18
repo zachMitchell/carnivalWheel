@@ -104,10 +104,10 @@ var wheelObjs = {
     
         this.pieces = typeof pieces == "number"?wheelObjs.generatePieces(this.masterCanvas.height,pieces,setColor):pieces;
         this.percent = 0; //Where the wheel actually is.
-        //Place in as many bool arguments as you want to highlight some pieces.
-        this.drawPieces = function(){
+        //If lightUp is a number, light up that piece, otherwise assume it's an array and see if a piece in the index should be lit up.
+        this.drawPieces = function(lightUp){
             for(var i = 0;i<this.pieces.length;i++){
-                this.pieces[i].render(arguments[i]);
+                this.pieces[i].render((typeof(lightUp) == "number") && lightUp === i || typeof(lightUp) == "object" && lightUp[i]);
             }
          } //Should only be done when needed.
     
@@ -390,7 +390,13 @@ var wheelObjs = {
             this.tickerTriangle.render(height);
         }
 
-        this.draw = function(percent,reverse = false){
+        this.draw = function(percent,reverse = false,lightUp){
+            //Trick -> Didn't intend on programming this, but inserting anything other than a number or an object will effectively run this and clear any lights.
+            if(typeof(lightUp)!="undefined"){
+                this.wheelGroup.drawPieces(lightUp);
+                this.wheelGroup.renderWheel();
+                this.wheelGroup.renderSpin();
+            }
             var ctx = this.coreCanvas.getContext('2d');
             ctx.clearRect(0,0,this.coreCanvas.width,this.coreCanvas.height);
             this.wheelGroup.draw(percent);

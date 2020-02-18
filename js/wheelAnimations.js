@@ -198,3 +198,15 @@ function pegIdleInstance(wheel){
         this.generator.next();
     }
 }
+
+//Winner winner; chicken dinner!!
+function* winnerPiece(wheelInst,targetPiece=0,doneFunc,timesToClunk=6,speed=65){
+    for(var i = 0;i<timesToClunk*2;i++){
+        var lightUp = i%2==0;
+        wheelInst.wheel.draw(wheelInst.percent,undefined,(lightUp?targetPiece:true));
+        if(lightUp) simpleAudio.play(clunk);
+        setTimeout(()=>wheelInst.currAnimation.next(),speed);
+        yield;
+    }
+    doneFunc?doneFunc():0;
+}

@@ -47,7 +47,7 @@ var wheelFuncs = {
     },
 
 
-    playAnimationWithRng:function(wheelInst,targetAnimation,reset,rig = -1){
+    playAnimationWithRng:function(wheelInst,targetAnimation,reset,doneFunc=()=>{},rig = -1){
         //Alright, let's reference all objects in the array except the ones where rndGoTo == true:
         var animationRef = [];
         var pieceCount = wheelInst.wheel.wheelGroup.pieces.length;
@@ -67,7 +67,9 @@ var wheelFuncs = {
                 {goTo:-100 -(100-targetPercent),swingIn:30,duration:500,playTick:1,doneFunc:()=>simpleAudio.play(cymbalSfx)});
         }
 
-        wheelInst.currAnimation = this.animate({wheel:wheelInst,sectors:animationRef},reset,()=>console.log('yay!'));
+
+
+        wheelInst.currAnimation = this.animate({wheel:wheelInst,sectors:animationRef},reset,()=>doneFunc(wheelInst.wheel.wheelGroup.getCurrentPiece(),wheelInst));
         wheelInst.currAnimation.next();
 
     },

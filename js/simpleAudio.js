@@ -64,7 +64,7 @@ var simpleAudio = {
             })));
 
         }
-        else if(simpleAudio._targetContext.prototype.isPrototypeOf(soundSrc)){
+        else if(Blob.prototype.isPrototypeOf(soundSrc)){
             //convert to arrayBuffer
             simpleAudio._makeArrayBuffer(soundSrc,e=>{
                 this.arrayBuffer = e.srcElement.result;

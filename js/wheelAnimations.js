@@ -114,7 +114,7 @@ var pegAnimations = {
     flicker:function*(idleInstance,doneFunc){
         var targetPegs = idleInstance.wheel.pegSet;
         targetPegs.lightPattern = [];
-        for(var i = 0;i<10;i++){
+        for(var i = 0;i<6;i++){
             for(var j=0;j<targetPegs.count;j++){
                 targetPegs.lightPattern[j] = (j+i)%2==1;
             }

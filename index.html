@@ -1,8 +1,28 @@
 <!DOCTYPE html>
 <html>
-    <head><title>Carnival wheel</title></head>
+    <head>
+        <title>Carnival wheel</title>
+        <style>
+            .preview{
+                width:5em;
+                height:5em;
+                border:5px solid transparent;
+                border-radius: 6px;
+            }
+            .preview.selected,.preview.selected:hover{
+                border-color:skyblue;
+            }
+            .preview:hover{
+                border-color: gray;
+            }
+        </style>
+    </head>
     <body>
-        <canvas id='wheelCanvas'></canvas>
+        <h1 id='loadTag'></h1>
+        <div id='wheelDiv'></div>
+        <button id='spinButton'>Spin!</button> <input type="checkbox" id='boringModeCheck'> Boring Mode
+        <div id='imagePreviews' style='overflow-x:scroll;width:100%'></div>
+        Custom image - <input type="file" id='customImageFile' accept="image/*">
         <script src='js/settings.js'></script>
         <script src='js/colorPresets.js'></script>
         <script src='js/colorTools.js'></script>
@@ -13,5 +33,24 @@
         <script src='js/confetti.js'></script>
         <script src='js/simpleAudio.js'></script>
         <script src='js/ui.js'></script>
+        <script src='js/dom.js'></script>
+        <script>
+            ui.loadAssets(()=>{
+                loadTag.innerHTML = ((100 / ui.totalAssets) * ui.assetsLoaded) + "%"
+            },()=>{
+                dom.loadImagePreviews();
+                //Ready to go! Time to setup the wheel
+                var ws = ui.wheelStuff;
+                document.body.removeChild(loadTag);
+                ws.wheel = new wheelFuncs.wheelInstance(new wheelObjs.wheel(300,3,undefined,colorPresets.rgb));
+                wheelDiv.appendChild(ws.wheel.wheel.coreCanvas);
+                ws.wheel.wheel.draw();
+                ws.idleInstance = new pegIdleInstance(ws.wheel.wheel);
+                //There's a weird context change if for some reason a function isn't wrapped around randomLightShow() :/
+                for(var i of imagePreviews.children){
+                    if(i.dataset.asset == 'smileHappy') i.click();
+                }
+            });
+        </script>
     </body>
 </html>

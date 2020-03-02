@@ -134,3 +134,19 @@ function oldSwing(sum,pieces,strength = .1){
 
     return result;
 }
+
+/*Probably the only section of code that isn't original:
+Wikipedia's example implementation of a hex converter (Wikipedia uses Creative Commons like I do):
+https://en.wikipedia.org/wiki/Hexadecimal#Division-remainder_in_source_base*/
+function toHex(d) {
+    var r = d % 16;
+    if (d - r == 0) {
+      return toChar(r);
+    }
+    return toHex( (d - r)/16 ) + toChar(r);
+  }
+  
+function toChar(n) {
+  const alpha = "0123456789ABCDEF";
+  return alpha.charAt(n);
+}

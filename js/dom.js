@@ -9,6 +9,7 @@ Dependencies: Pretty much everything :P (see index.html)
 var dom = {
     selectedImage:undefined,
     customImageData:'',
+    wheelGroup:undefined,
     imageClick:function(){
         if(dom.selectedImage!=this){
             if(dom.selectedImage)dom.selectedImage.classList.remove('selected');
@@ -42,6 +43,60 @@ var dom = {
         delete ui.wheelStuff.idleInstance.generator;
         dom.startIdling();
         ui.wheelStuff.randomLightShow();
+    },
+    /*Make a ui-element for the user to modify a pice of the wheel.
+    This element doesn't care where it is as long as it's inside a parent element.
+    The index of the element's position is how it knows which piece of the wheel to update.*/
+    makePieceDom:pieceIndex=>{
+        var pieceDom = document.createElement('div');
+        pieceDom.className = 'pieceDom';
+        //Create elements to change the target piece index
+        pieceDom.innerHTML='<input><input type="color"><button class="piceDel"></button>';
+        for(var i of pieceDom.getElementsByTagName('input')) i.onchange=dom.pieceDomChange;
+        var targetPiece = dom.wheelGroup.pieces[pieceIndex];
+        if(!targetPiece) throw new Error("Piece doesn't exist, please make it first!");
+        pieceDom.children[0].value = targetPiece.text;
+        var resultColor = '#';
+        targetPiece.color.forEach(e=>resultColor+=(e<16?'0':'')+toHex(e));
+        pieceDom.children[1].value = resultColor;
+
+        return pieceDom;
+    },
+    pieceDomChange:function(){
+        if(!this.parentElement) throw new Error("insert this element into a parent DOM element to work");
+
+        var targetPiece = dom.wheelGroup.pieces[[...this.parentElement.parentElement.children].indexOf(this.parentElement)];
+        targetPiece.text = this.parentElement.children[0].value;
+        console.log(this);
+        console.log('test');
+        targetPiece.color = colorTools.hex2RgbArray([this.parentElement.children[1].value])[0];
+
+        //Re-render the wheel:
+        targetPiece.render();
+        dom.wheelGroup.renderWheel();
+        dom.wheelGroup.renderSpin();
+        ui.wheelStuff.wheel.wheel.draw();
+    },
+    refreshPieceDom:draw=>{
+        pieceEditor.innerHTML = '';
+        for(var i = 0;i<dom.wheelGroup.pieces.length;i++)
+            pieceEditor.appendChild(dom.makePieceDom(i));
+
+        if(draw){
+            dom.wheelGroup.drawPieces()
+            dom.wheelGroup.renderWheel();
+            dom.wheelGroup.renderSpin();
+            ui.wheelStuff.wheel.wheel.draw();
+        }
+    },
+    //two indexes are the arguments. When they swap values out, the whole wheel will refresh.
+    swapPieceIndexes:function(p1,p2){
+        for(var i = 0;i< arguments.length;i++){
+            var currDom = pieceEditor.children[arguments[!(i*1)]];
+            dom.wheelGroup.pieces[i].text = currDom.children[0].value;
+            dom.wheelGroup.pieces[i].color = currDom.children[1].value;
+        }
+        dom.refreshPieceDom(true);
     }
 }
 

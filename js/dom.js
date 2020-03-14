@@ -51,7 +51,7 @@ var dom = {
         var pieceDom = document.createElement('div');
         pieceDom.className = 'pieceDom';
         //Create elements to change the target piece index
-        pieceDom.innerHTML='<input><input type="color"><button class="piceDel"></button>';
+        pieceDom.innerHTML='<input><input type="color"><button class="pieceDel">X</button>';
         for(var i of pieceDom.getElementsByTagName('input')) i.onchange=dom.pieceDomChange;
         var targetPiece = dom.wheelGroup.pieces[pieceIndex];
         if(!targetPiece) throw new Error("Piece doesn't exist, please make it first!");
@@ -59,6 +59,7 @@ var dom = {
         var resultColor = '#';
         targetPiece.color.forEach(e=>resultColor+=(e<16?'0':'')+toHex(e));
         pieceDom.children[1].value = resultColor;
+        pieceDom.getElementsByClassName('pieceDel')[0].onclick=dom.removePieceBtn;
 
         return pieceDom;
     },
@@ -96,6 +97,35 @@ var dom = {
             dom.wheelGroup.pieces[i].text = currDom.children[0].value;
             dom.wheelGroup.pieces[i].color = currDom.children[1].value;
         }
+        dom.refreshPieceDom(true);
+    },
+    removePiece:function(index){
+        if(dom.wheelGroup.pieces.length > 2){
+            delete dom.wheelGroup.pieces[index];
+            dom.wheelGroup.pieces = dom.wheelGroup.pieces.filter(e=>e);
+            //Update piece count
+            for(var i of dom.wheelGroup.pieces) i.fraction = dom.wheelGroup.pieces.length;
+            dom.refreshPieceDom(true);
+        }
+    },
+    removePieceBtn:function(){
+        var parent = this.parentElement.parentElement;
+        dom.removePiece([...parent.children].indexOf(this.parentElement));
+    },
+    loadThemePicker:function(){
+        themePicker.innerHTML = '';
+        for(var i in colorPresets){
+            var targetTheme = document.createElement('option');
+            targetTheme.innerHTML=i;
+            themePicker.appendChild(targetTheme);
+        }
+    },
+    applyTheme:function(themeName){
+        var colorCount = dom.wheelGroup.pieces.length;
+        var rgbArray = colorTools.generateColors(colorTools.hex2RgbArray(colorPresets[themeName]),colorCount);
+        for(var i = 0;i<colorCount;i++)
+            dom.wheelGroup.pieces[i].color = rgbArray[i];
+        
         dom.refreshPieceDom(true);
     }
 }
@@ -136,11 +166,18 @@ customImageFile.onchange = function(){
     newCustom.src=URL.createObjectURL(this.files[0]);
 }
 
-function imgToDataUrl(imgTag){
-    // if(!height) height = width;
-    var tmpCanvas = document.createElement('canvas');
-    tmpCanvas.width = imgTag.width, tmpCanvas.height = imgTag.height;
-    var tmpCanvasCtx = tmpCanvas.getContext('2d');
-    tmpCanvasCtx.drawImage(imgTag,0,0,imgTag.width,imgTag.height);
-    return tmpCanvas.toDataURL();
+addPieceBtn.onclick = function(){
+    var newPieceCount = dom.wheelGroup.pieces.length+1;
+    //Make a new piece.
+    dom.wheelGroup.pieces.push(
+        new wheelObjs.wheelPiece(dom.wheelGroup.masterCanvas.height,
+            newPieceCount,
+            dom.wheelGroup.pieces[newPieceCount-2].color
+        ));
+    
+    //update the other pieces in the group with the same number
+    for(var i of dom.wheelGroup.pieces) i.fraction = newPieceCount;
+
+    //Update DOM and re-draw:
+    dom.refreshPieceDom(true);
 }

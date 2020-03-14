@@ -150,3 +150,12 @@ function toChar(n) {
   const alpha = "0123456789ABCDEF";
   return alpha.charAt(n);
 }
+
+function imgToDataUrl(imgTag){
+    // if(!height) height = width;
+    var tmpCanvas = document.createElement('canvas');
+    tmpCanvas.width = imgTag.width, tmpCanvas.height = imgTag.height;
+    var tmpCanvasCtx = tmpCanvas.getContext('2d');
+    tmpCanvasCtx.drawImage(imgTag,0,0,imgTag.width,imgTag.height);
+    return tmpCanvas.toDataURL();
+}

@@ -21,6 +21,9 @@
                 height:300px;
                 width:40%;
             }
+            .pieceDom{
+                display:inline-block;
+            }
         </style>
     </head>
     <body>
@@ -28,8 +31,11 @@
         <div id='wheelDiv' style='display:inline-block'></div>
         <div id='pieceEditor'></div><br>
         <button id='spinButton'>Spin!</button> <input type="checkbox" id='boringModeCheck'> Boring Mode
+        <select id='themePicker'></select> <button onclick='dom.applyTheme(themePicker.value);'>Apply theme</button>
+        <button id='addPieceBtn'>Add piece</button>
         <div id='imagePreviews' style='width:100%'></div>
-        Custom image - <input type="file" id='customImageFile' accept="image/*">
+        Custom image - <input type="file" id='customImageFile' accept="image/*"><br>
+        Rig <input type="checkbox">
         <script src='js/settings.js'></script>
         <script src='js/colorPresets.js'></script>
         <script src='js/colorTools.js'></script>
@@ -60,6 +66,7 @@
                 //the wheelGroup object was called so many times that it became tedious to constantly call it... so here's an alias :P
                 dom.wheelGroup = ws.wheel.wheel.wheelGroup;
                 dom.refreshPieceDom();
+                dom.loadThemePicker();
             });
         </script>
     </body>

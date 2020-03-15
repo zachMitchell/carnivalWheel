@@ -51,8 +51,9 @@ var dom = {
         var pieceDom = document.createElement('div');
         pieceDom.className = 'pieceDom';
         //Create elements to change the target piece index
-        pieceDom.innerHTML='<input><input type="color"><button class="pieceDel">X</button>';
-        for(var i of pieceDom.getElementsByTagName('input')) i.onchange=dom.pieceDomChange;
+        pieceDom.innerHTML='<input><input type="color"><button class="pieceDel">X</button><input type="radio" class="riggedPiece" name="riggedPiece"/>';
+        for(var i of pieceDom.getElementsByTagName('input'))
+            if(i.type!='radio') i.onchange=dom.pieceDomChange;
         var targetPiece = dom.wheelGroup.pieces[pieceIndex];
         if(!targetPiece) throw new Error("Piece doesn't exist, please make it first!");
         pieceDom.children[0].value = targetPiece.text;
@@ -68,8 +69,6 @@ var dom = {
 
         var targetPiece = dom.wheelGroup.pieces[[...this.parentElement.parentElement.children].indexOf(this.parentElement)];
         targetPiece.text = this.parentElement.children[0].value;
-        console.log(this);
-        console.log('test');
         targetPiece.color = colorTools.hex2RgbArray([this.parentElement.children[1].value])[0];
 
         //Re-render the wheel:
@@ -138,14 +137,26 @@ spinButton.onclick = function(){
     clearInterval(ws.wheel.loop);
     delete ws.wheel.currAnimation;
 
+    var riggedPiece;
+    var rigRadios = document.getElementsByClassName('riggedPiece'); 
+    //Look for rigged piece if applicable:
+    for(var i = 0;i < rigRadios.length;i++){
+        if(rigRadios[i].checked){
+            riggedPiece = i;
+            break;
+        }
+    }
+
     var keys = Object.keys(wheelAnimations);
     var targetAnimation = boringModeCheck.checked? wheelAnimations.fakeSpin: wheelAnimations[keys[Math.floor(Math.random()*keys.length)]];
     wheelFuncs.playAnimationWithRng(ws.wheel,targetAnimation,!boringModeCheck.checked,
         (e,f)=>{
-        f.currAnimation = winnerPiece(f,e);
-        f.currAnimation.next();
-        dom.startIdling();
-    });
+            setTimeout(()=>{
+                f.currAnimation = winnerPiece(f,e);
+                f.currAnimation.next();
+                dom.startIdling();
+            },200);
+    },riggedPiece);
 }
 
 customImageFile.onchange = function(){
@@ -180,4 +191,25 @@ addPieceBtn.onclick = function(){
 
     //Update DOM and re-draw:
     dom.refreshPieceDom(true);
+}
+
+rigCheck.onclick = function(){
+    var showHide = this.checked*1;
+    var boolVars = [['remove','add'],['unset','none']];
+    for(var i of pieceEditor.getElementsByClassName('riggedPiece'))
+        i.classList[boolVars[0][showHide]]('show');
+    
+    for(var i of pieceEditor.getElementsByClassName('pieceDel'))
+        i.style.display = boolVars[1][showHide];
+    
+    dontRig.classList[boolVars[0][showHide]]('show');
+}
+
+dontRig.onclick = ()=>{
+    for(var i of pieceEditor.getElementsByClassName('riggedPiece')){
+        if(i.checked){
+            i.checked = false;
+            break;
+        }
+    }
 }

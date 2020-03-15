@@ -24,6 +24,12 @@
             .pieceDom{
                 display:inline-block;
             }
+            .riggedPiece,#dontRig{
+                display: none;
+            }
+            .riggedPiece.show,#dontRig.show{
+                display:unset;
+            }
         </style>
     </head>
     <body>
@@ -35,7 +41,7 @@
         <button id='addPieceBtn'>Add piece</button>
         <div id='imagePreviews' style='width:100%'></div>
         Custom image - <input type="file" id='customImageFile' accept="image/*"><br>
-        Rig <input type="checkbox">
+        Rig <input type="checkbox" id='rigCheck'> <button id='dontRig'>Don't Rig</button>
         <script src='js/settings.js'></script>
         <script src='js/colorPresets.js'></script>
         <script src='js/colorTools.js'></script>
@@ -63,6 +69,7 @@
                 for(var i of imagePreviews.children){
                     if(i.dataset.asset == 'smileHappy') i.click();
                 }
+                tickSound.alwaysReset = true;
                 //the wheelGroup object was called so many times that it became tedious to constantly call it... so here's an alias :P
                 dom.wheelGroup = ws.wheel.wheel.wheelGroup;
                 dom.refreshPieceDom();

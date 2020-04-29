@@ -5,6 +5,7 @@ var wheelFuncs = {
     /*This object contains variables that only really matter if we're puppeting the wheel object. wheelObjs.wheel is the minimum, where simply the objects we want to control are stored.*/
     wheelInstance: function(wheel = new wheelObjs.wheel()){
         this.wheel = wheel;
+        this.expectedOutcome = 0;
         wheelFuncs.reset(this);
     },
 
@@ -22,6 +23,8 @@ var wheelFuncs = {
     playTickSound:(volume = 1)=>{
         simpleAudio.play(tickSound,undefined,0,volume);
     },
+
+    cymbalOrEaster:()=>returnByChance([cymbalSfx,.8],[easterEgg,.2]),
 
     //An "organic" spin (a.k.a not an animation). Spin the wheel based on a variety of values you could change with a real wheel. 
     spin:function(wInst,speed = 2,pegPower = .02,axelDrag = .001){
@@ -51,26 +54,46 @@ var wheelFuncs = {
         //Alright, let's reference all objects in the array except the ones where rndGoTo == true:
         var animationRef = [];
         var pieceCount = wheelInst.wheel.wheelGroup.pieces.length;
+        var expectedOutcome = 0;
         for(var i of targetAnimation){
             if(i.rndGoTo){
+                lastRndNumber = Math.floor(Math.random()*pieceCount);
                 animationRef.push(setObjProperties({},i));
-                animationRef[animationRef.length-1].goTo += 100/pieceCount * Math.floor(Math.random()*pieceCount);
+                animationRef[animationRef.length-1].goTo += 100/pieceCount * lastRndNumber;
             }
             else animationRef.push(i);
+            //predict where the wheel will go based on the instructions retrieved above:
+            var animObj = animationRef[animationRef.length-1];
+            if(! animObj.append) expectedOutcome += animObj.goTo;
+            else expectedOutcome = animObj.goTo;
         }
 
-        //If we rig the wheel, just add it to our compiled animation:
-        if(typeof rig == "number" && rig > -1){
-            var targetPercent = (100/pieceCount) * rig;
-            animationRef.push(
-                {goTo:0,append:1,duration:1000,preFunc:()=>this.resetNegativeNumbers(wheelInst),doneFunc:()=>{simpleAudio.play(whoopSfx);simpleAudio.play(drmRoll,.7)}},
-                {goTo:-100 -(100-targetPercent),swingIn:30,duration:500,playTick:1,doneFunc:()=>simpleAudio.play(cymbalSfx)});
-        }
+        wheelInst.expectedOutcome = expectedOutcome;
 
+        //If we rig the wheel, run it after the animation plays:
+        var applyRig = typeof rig == "number" && rig > -1;
 
-
-        wheelInst.currAnimation = this.animate({wheel:wheelInst,sectors:animationRef},reset,()=>doneFunc(wheelInst.wheel.wheelGroup.getCurrentPiece(),wheelInst));
+        //A function to run the done function :P
+        var doneFuncWrapper = ()=>doneFunc(wheelInst.wheel.wheelGroup.getCurrentPiece(),wheelInst);
+        wheelInst.currAnimation = this.animate({wheel:wheelInst,sectors:animationRef},reset,applyRig?()=>wheelFuncs.rig(wheelInst,rig,doneFuncWrapper):doneFuncWrapper);
         wheelInst.currAnimation.next();
+
+    },
+    //Due to rigging requiring some dynamic math, it has become a separate piece of the animation system.
+    rig:function(wheelInst,targetPiece,doneFunc){
+        this.resetNegativeNumbers(wheelInst.wheel.wheelGroup);
+        var pieceCount = wheelInst.wheel.wheelGroup.pieces.length;
+        var targetPercent = (100/pieceCount) * targetPiece;
+        var currLocation = wheelInst.wheel.wheelGroup.percent;
+        var finalDestination = (100 - currLocation) + (100-targetPercent);
+        console.warn(100 + targetPercent);
+
+        wheelInst.currAnimation = wheelFuncs.animate({wheel:wheelInst,sectors:[
+            {goTo:0,append:1,duration:1000,preFunc:()=>this.resetNegativeNumbers(wheelInst),doneFunc:()=>{simpleAudio.play(whoopSfx);simpleAudio.play(drmRoll,.7)}},
+            {goTo:-100 - (-100+targetPercent) + (100/pieceCount/2),append:0,swingIn:30,duration:500,playTick:1,doneFunc:()=>{/*wheelInst.wheel.draw(targetPercent - (100/pieceCount/2));*/simpleAudio.play(wheelFuncs.cymbalOrEaster())}}
+        ]},0,doneFunc);
+        wheelInst.currAnimation.next();
+        //- (100/pieceCount/2)
 
     },
     resetNegativeNumbers:function(wheel){

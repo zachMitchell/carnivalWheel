@@ -10,8 +10,21 @@ var dom = {
     selectedImage:undefined,
     customImageData:'',
     wheelGroup:undefined,
+    wSpinning:false, //Do not set manually, check dom.spinFlag()!
+    getRiggedPiece:function(){
+        var riggedPiece;
+        var rigRadios = document.getElementsByClassName('riggedPiece'); 
+        //Look for rigged piece if applicable:
+        for(var i = 0;i < rigRadios.length;i++){
+            if(rigRadios[i].checked){
+                riggedPiece = i;
+                break;
+            }
+        }
+        return riggedPiece;
+    },
     imageClick:function(){
-        if(dom.selectedImage!=this){
+        if(dom.selectedImage!=this && !dom.wSpinning){
             if(dom.selectedImage)dom.selectedImage.classList.remove('selected');
             dom.selectedImage = this;
             this.classList.add('selected');
@@ -126,33 +139,74 @@ var dom = {
             dom.wheelGroup.pieces[i].color = rgbArray[i];
         
         dom.refreshPieceDom(true);
+    },
+    spinFlag:function(tf){
+        dom.wSpinning = tf;
+        imagePreviews.classList[tf?"add":"remove"]('disabled');
+        document.body[(tf?"add":"remove")+"EventListener"]("keydown",dom.quickVictoryListener);
+    },
+    //When you manage to win so fast the confetti can't keep up
+    quickVictory:function(){
+        var wInst = ui.wheelStuff.wheel
+        var riggedPiece = dom.getRiggedPiece();
+        var qC = ui.wheelStuff.quickConfetti;
+        clearInterval(wInst.loop);
+        delete wInst.currAnimation;
+        wInst.wheel.draw(wInst.expectedOutcome);
+        wInst.percent = wInst.expectedOutcome;
+        //Time for a fancy trick, we use resetNegativeNumbers to fix a negative OR positive number to something of 0 to 100:
+        if(dom.wheelGroup.percent > -1) dom.wheelGroup.percent = 0 - dom.wheelGroup.percent;
+        wheelFuncs.resetNegativeNumbers(wInst.wheel.wheelGroup);
+        // console.warn(dom.wheelGroup.getCurrentPiece());
+
+        //manually invoking a custom confetti throw; probably should have this built in :P
+        simpleAudio.play(qC.sfx);
+        qC.confettiObj.currAnimation = qC.confettiObj.throwUpwards(settings.frameRate,10,500);
+        qC.confettiObj.currAnimation.next();
+        var doneFunc = ()=>{
+            wInst.currAnimation = winnerPiece(wInst,riggedPiece || dom.wheelGroup.getCurrentPiece(),()=>{dom.startIdling();dom.spinFlag(0)});
+            wInst.currAnimation.next();
+        }
+
+        if(riggedPiece !== undefined)
+            wheelFuncs.rig(wInst,riggedPiece,doneFunc);
+        else setTimeout(doneFunc,300);
+    },
+    quickVictoryListener: function(e){
+        if(e.key == " "){
+            e.preventDefault();
+            dom.quickVictory();
+        }
+        document.body.removeEventListener('keydown',dom.quickVictoryListener);
     }
 }
 
 spinButton.onclick = function(){
+    dom.spinFlag(true);
     var ws = ui.wheelStuff;
+
+    //Clear confetti prompt
+    if(ws.confettiInstance.isActive) ws.confettiInstance.deactivate();
+    if(easterEgg.playing) simpleAudio.stop(easterEgg);
+
+
     clearInterval(ws.idleInterval);
     delete ws.idleInstance.generator;
+    ui.wheelStuff.wheel.wheel.pegSet.lightPattern = [];
+    ui.wheelStuff.wheel.wheel.pegSet.configure();
 
     clearInterval(ws.wheel.loop);
     delete ws.wheel.currAnimation;
 
-    var riggedPiece;
-    var rigRadios = document.getElementsByClassName('riggedPiece'); 
-    //Look for rigged piece if applicable:
-    for(var i = 0;i < rigRadios.length;i++){
-        if(rigRadios[i].checked){
-            riggedPiece = i;
-            break;
-        }
-    }
+    var riggedPiece = dom.getRiggedPiece();
 
     var keys = Object.keys(wheelAnimations);
     var targetAnimation = boringModeCheck.checked? wheelAnimations.fakeSpin: wheelAnimations[keys[Math.floor(Math.random()*keys.length)]];
     wheelFuncs.playAnimationWithRng(ws.wheel,targetAnimation,!boringModeCheck.checked,
         (e,f)=>{
+            console.log(e,ws.wheel.percent,ws.wheel.wheel.wheelGroup.percent);
             setTimeout(()=>{
-                f.currAnimation = winnerPiece(f,e);
+                f.currAnimation = winnerPiece(f,e,()=>{ws.confettiInstance.activate();dom.spinFlag(false);});
                 f.currAnimation.next();
                 dom.startIdling();
             },200);
@@ -161,6 +215,10 @@ spinButton.onclick = function(){
 
 customImageFile.onchange = function(){
     //Custom image was loaded, so load it in with the othe icons and store it's data.
+    changeCustomImage(URL.createObjectURL(this.files[0]));
+}
+
+function changeCustomImage(dataUrl){
     var oldCustom = document.getElementsByClassName('preview custom')[0];
     if(oldCustom) imagePreviews.removeChild(oldCustom);
 
@@ -174,7 +232,7 @@ customImageFile.onchange = function(){
         dom.customImageData = imgToDataUrl(this);
         this.click();
     }
-    newCustom.src=URL.createObjectURL(this.files[0]);
+    newCustom.src = dataUrl;
 }
 
 addPieceBtn.onclick = function(){
@@ -212,4 +270,64 @@ dontRig.onclick = ()=>{
             break;
         }
     }
+}
+
+//Save wheel for use later. Things to grab: pieces (name and color), image
+saveWh.onclick = function(){
+    var saveJson = {pieces:[]};
+    //Piece information:
+    for(var i of dom.wheelGroup.pieces)
+        saveJson.pieces.push([i.text,i.color]);
+    
+    //Images work a little differently, if the selected image is a built-in, we save the name, otherwise the dataURL of a custom image.
+    var selectedImage = imagePreviews.getElementsByClassName('selected')[0];
+    if(selectedImage.dataset.asset == "custom")
+        saveJson.image = dom.customImageData;
+    else saveJson.image = selectedImage.dataset.asset;
+    
+    var fileLink = document.createElement('a');
+    fileLink.href = URL.createObjectURL(new Blob([JSON.stringify(saveJson)]));
+    fileLink.download = 'wheelConfig.json';
+    fileLink.click();
+}
+
+loadWh.onchange = function(){
+    var fReader = new FileReader();
+    fReader.onload = e=>{
+        try{
+            var loadedJson = JSON.parse(e.srcElement.result);
+            if(loadedJson.pieces.length){
+                var pieceResults = [];
+                for(var i of loadedJson.pieces)
+                    pieceResults.push(new wheelObjs.wheelPiece(ui.wheelStuff.wheel.wheel.coreCanvas.height,loadedJson.pieces.length,i[1],i[0]));
+                
+                dom.wheelGroup.pieces = pieceResults;
+            }
+
+            //Image wizzardy
+            if(loadedJson.image){
+                //Check to see if we have a png or not
+                if(loadedJson.image.indexOf('data:image/png;base64') === 0){
+                    //Treat this as a custom image
+                    dom.customImageData = loadedJson.image;
+                    changeCustomImage(loadedJson.image);
+                }
+                else{
+                    //This is a built-in image
+                    for(var i of imagePreviews.children)
+                        if(i.dataset.asset == loadedJson.image){
+                            i.click();
+                        }
+                }
+            }
+
+            dom.refreshPieceDom(true);
+        }
+        catch(e){
+            alert("Sorry, this file won't do :( Please insert a wheel configuration file or fix the file you have to work with the wheel");
+            console.error(e);
+        }
+
+    }
+    fReader.readAsText(loadWh.files[0]);
 }

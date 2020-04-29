@@ -5,7 +5,6 @@
 var wheelObjs = {
 
     wheelPiece:function(wh,fraction=3,color=[230,230,230],text=''){
-    
         this.bitmap = document.createElement('canvas');
         this.wh = wh;
         //This should accept an rgb array:
@@ -79,7 +78,7 @@ var wheelObjs = {
                 ctx.translate((wh/2)*1.25,(wh/2)*.95);
                 //We're using a negative number here because the rotation system is counter clockwise
                 ctx.rotate((0- (360 / this.fraction / 2)) * Math.PI/180);
-                ctx.fillText(renderText,0,0);
+                ctx.fillText(renderText,wh*.05,0);
     
                 //Reset text:
                 ctx.rotate( (360 / this.fraction / 2) * Math.PI/180);
@@ -138,8 +137,13 @@ var wheelObjs = {
             ctx.translate((0 - (wh/2)),(0 - (wh/2)));
         }
     
-        this.getCurrentPiece = function(){
-            return Math.floor(this.pieces.length * (this.percent * .01));
+        //It appears that the way the wheel is aligned is different then how it spins... therefore we need to invert this
+        this.getCurrentPiece = function(offset = this.pieces.length-1){
+            //This is a little sloppy... but does the job
+            var result = Math.ceil((100 - this.percent) / (100 / (this.pieces.length)))-1 -offset;
+            //Offset causes the result to be slightly different on purpose.
+            if(result < 0) result = this.pieces.length + result;
+            return result;
         }
     
         this.draw = function(percent){ //Draws all layers, can even update percentage
@@ -245,7 +249,7 @@ var wheelObjs = {
     //The image in the center of the wheel. Probably gonna put some of the smilies from my site in here ;P
     //imgElement can be either an image or a canvas.
     centerAxel:function(canvasHeight,imgElement){
-        this.size = canvasHeight
+        this.size = canvasHeight * 2
         this.mainCanvas = document.createElement('canvas');
         this.mainCanvas.height = canvasHeight;
         this.mainCanvas.width = canvasHeight;

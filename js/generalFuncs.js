@@ -159,3 +159,18 @@ function imgToDataUrl(imgTag){
     tmpCanvasCtx.drawImage(imgTag,0,0,imgTag.width,imgTag.height);
     return tmpCanvas.toDataURL();
 }
+
+/*For every argument, send back something based on custom probabilty. Odds must add up to 1.
+Example call: returnByChance(['item1',.3],['item2',.7]); where item 2 should pop up more frequently.*/
+function returnByChance(){
+    var rndNumber = Math.random();
+    var totalScore = 0;
+    var currValue;
+    for(var i of arguments){
+        totalScore+=i[1];
+        currValue = i[0];
+        if(totalScore >= rndNumber) break;
+    }
+
+    return currValue;
+}

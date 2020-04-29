@@ -17,8 +17,10 @@ var ui = {
             drmRoll:'DrumRollQuick.mp3',
             cymbalSfx:'Cymbal.mp3',
             confettiSfx:'noiseMaker.mp3',
+            quickConfetti:'noiseMakerQuick.mp3',
             wooshSmack:'wooshSmack.mp3',
-            clunk:'clunk.mp3'
+            clunk:'clunk.mp3',
+            easterEgg:'easterEgg.mp3' //For some reason my friend wanted this here, and have no Idea what it will do!
         },
         //Images:
         img:{
@@ -87,6 +89,8 @@ var ui = {
         //To make the wheel interesting while nothing's happening, a random light show can happen. First, keep tabs on the random idleness
         idleInterval:undefined,
         idleInstance:undefined,
+        confettiInstance:undefined,
+        quickConfetti:undefined,
         //function to play a random animation
         randomLightShow:function(idleInstance = this.idleInstance){
             var animationKeys = Object.keys(pegAnimations).filter(e=>e[0]!='_');

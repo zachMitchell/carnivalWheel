@@ -5,7 +5,7 @@ The majority of this file will just be raw data. For a reference on how to make 
 //Reference: on an organic spin (wheelFuncs.spin() defaults), it takes about 4.25 rotations and 9.33 seconds for the wheel to stop*
 var wheelAnimations = {
     inverseSpin:[
-        {goTo:800,duration:5000,swingIn:100,playTick:1,append:true,rndGoTo:1,doneFunc:()=>simpleAudio.play(cymbalSfx)}
+        {goTo:800,duration:5000,swingIn:100,playTick:1,append:true,rndGoTo:1,doneFunc:()=>simpleAudio.play(wheelFuncs.cymbalOrEaster())}
     ],
     fakeSpin:[
         {goTo:425,duration:9000,swingOut:100,playTick:1,append:true,rndGoTo:1}
@@ -22,7 +22,7 @@ var wheelAnimations = {
         {goTo:25,duration:100,swingIn:100,doneFunc:()=>wheelFuncs.playTickSound() }, //Hair-
         {goTo:12.5,duration:100,swingOut:50},
         {goTo:25,duration:100,swingIn:100,doneFunc:()=>wheelFuncs.playTickSound() }, //Cut...
-        {goTo:-50,duration:500,swingIn:50,swingOut:50,append:1,doneFunc:()=>{simpleAudio.play(drmRoll,.4);setTimeout(()=>simpleAudio.play(cymbalSfx),100)}}, //Wow, that's weird delay :P
+        {goTo:-50,duration:500,swingIn:50,swingOut:50,append:1,doneFunc:()=>{simpleAudio.play(drmRoll,.4);setTimeout(()=>simpleAudio.play(wheelFuncs.cymbalOrEaster()),100)}}, //Wow, that's weird delay :P
         {goTo:525,duration:250,swingIn:50,swingOut:50,append:1,rndGoTo:1}, //...TWO BITS! :O
     ],
     backCrack:[
@@ -64,7 +64,7 @@ var wheelAnimations = {
         {goTo:-50,duration:1000,swingOut:50,swingIn:50,append:1,doneFunc:()=>setTimeout(()=>simpleAudio.play(drmRoll,1),1000)},
         //Whee!
         {goTo:450,duration:2000,swingIn:100,playTick:1,append:true},
-        {goTo:0,duration:1,append:true,rndGoTo:1,doneFunc:()=>simpleAudio.play(cymbalSfx)},
+        {goTo:0,duration:1,append:true,rndGoTo:1,doneFunc:()=>simpleAudio.play(wheelFuncs.cymbalOrEaster())},
     ],
     smack:[
         {goTo:50,duration:200,rndGoTo:1,append:true,preFunc:()=>simpleAudio.play(wooshSmack)},
@@ -76,7 +76,7 @@ var wheelAnimations = {
         {goTo:12.5,duration:100,append:true,swingIn:100,doneFunc:()=>wheelFuncs.playTickSound(.4)},
         {goTo:-6.25,duration:50,append:true,swingOut:100},
         {goTo:6.25,duration:50,append:true,swingIn:100,doneFunc:()=>wheelFuncs.playTickSound(.4)},
-        {goTo:0,duration:250,append:true,doneFunc:()=>simpleAudio.play(cymbalSfx)},
+        {goTo:0,duration:250,append:true,doneFunc:()=>simpleAudio.play(wheelFuncs.cymbalOrEaster())},
     ]
 };
 
@@ -94,6 +94,8 @@ var pegAnimations = {
         wheel.pegSet.lightPattern = [];
         pegAnimations._drawPegs(wheel);
     },
+    //Next frame of any of these peg animations. If you can't go on, fail silently. (only works inside those functions)
+    _pegNextFailsafe: e=>e.generator?e.generator.next():0,
 
     //loop around the wheel once
     lapSingle:function*(idleInstance,doneFunc){
@@ -104,7 +106,7 @@ var pegAnimations = {
             if(i>0) targetPegs.lightPattern[i-1] = false;
             pegAnimations._drawPegs(idleInstance.wheel);
             //Move after this alloted amount of time:
-            setTimeout(()=>idleInstance.generator.next(),40);
+            setTimeout(()=>pegAnimations._pegNextFailsafe(idleInstance),40);
             yield;
         }
         pegAnimations._clearPegs(idleInstance.wheel);
@@ -119,7 +121,7 @@ var pegAnimations = {
                 targetPegs.lightPattern[j] = (j+i)%2==1;
             }
             pegAnimations._drawPegs(idleInstance.wheel);
-            setTimeout(()=>idleInstance.generator.next(),500);
+            setTimeout(()=>pegAnimations._pegNextFailsafe(idleInstance),500);
             yield;
         }
         pegAnimations._clearPegs(idleInstance.wheel);
@@ -138,7 +140,7 @@ var pegAnimations = {
         for(var i = 0;i<2;i++){
             do{
                 pegAnimations._drawPegs(idleInstance.wheel);
-                setTimeout(()=>idleInstance.generator.next(),20);
+                setTimeout(()=>pegAnimations._pegNextFailsafe(idleInstance),20);
                 yield;
 
                 targetPegs.lightPattern[frontPlacement] = false;
@@ -172,7 +174,7 @@ var pegAnimations = {
             targetPegs.lightPattern[targetPegs.count-1] = lightUp;
             for(var j = 0;j<targetPegs.count/2;j++){
                 pegAnimations._drawPegs(idleInstance.wheel);
-                setTimeout(()=>idleInstance.generator.next(),40);
+                setTimeout(()=>pegAnimations._pegNextFailsafe(idleInstance),40);
                 yield;
 
                 frontPlacement++;

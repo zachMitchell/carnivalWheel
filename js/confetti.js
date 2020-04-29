@@ -36,7 +36,7 @@ var confetti = {
             //Based on default width of canvas:
             var sizeChange = (1 / 300) * w;
             ctx.clearRect(0,0,w,h);
-            ctx.font = 15 * sizeChange+'px Arial';
+            ctx.font ='bold '+ (15 * sizeChange)+'px Arial';
             ctx.fillStyle='rgb('+this.currColor[0]+','+this.currColor[1]+','+this.currColor[2]+')';
             ctx.globalAlpha = this.colorPercent * .01;
             ctx.fillText('Press spacebar to throw confetti!',w*.15,h*.9);
@@ -123,6 +123,7 @@ var confetti = {
         this.confettiObj = new confetti.confettiObj(srcCanvas, assets);
         this.frameRate = frameRate;
         this.sfx = sfx;
+        this.isActive = false;
 
         //To interface with the DOM, we need to keep track of the functions in use.
         this.bodyListener = e=>{
@@ -147,11 +148,15 @@ var confetti = {
                     this.prompt.render();
 
                 },this.frameRate);
+            this.isActive = true;
         }
 
         this.deactivate = function(){
             document.body.removeEventListener('keydown',this.bodyListener);
             clearInterval(this.prompt.currInterval);
+            var canvasElement = this.prompt.primaryCanvas;
+            canvasElement.getContext('2d').clearRect(0,0,canvasElement.width,canvasElement.height);
+            this.isActive = false;
         }
 
     }

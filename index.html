@@ -15,6 +15,15 @@
             .preview:hover{
                 border-color: gray;
             }
+
+            #imagePreviews.disabled .preview:hover:not(.selected){
+                border:5px solid transparent;
+            }
+
+            #imagePreviews.disabled:hover{
+                cursor:not-allowed;
+            }
+
             #pieceEditor{
                 display:inline-block;
                 overflow-y: scroll;
@@ -30,11 +39,16 @@
             .riggedPiece.show,#dontRig.show{
                 display:unset;
             }
+            #confettiCanvas{
+                position:absolute
+            }
         </style>
     </head>
     <body>
         <h1 id='loadTag'></h1>
-        <div id='wheelDiv' style='display:inline-block'></div>
+        <div id='wheelDiv' style='display:inline-block'>
+            <canvas id='confettiCanvas' width=300 height=300></canvas>
+        </div>
         <div id='pieceEditor'></div><br>
         <button id='spinButton'>Spin!</button> <input type="checkbox" id='boringModeCheck'> Boring Mode
         <select id='themePicker'></select> <button onclick='dom.applyTheme(themePicker.value);'>Apply theme</button>
@@ -42,6 +56,10 @@
         <div id='imagePreviews' style='width:100%'></div>
         Custom image - <input type="file" id='customImageFile' accept="image/*"><br>
         Rig <input type="checkbox" id='rigCheck'> <button id='dontRig'>Don't Rig</button>
+        <br>
+        <br>
+        <button id='saveWh'>Save Wheel</button><button onclick="loadWh.click()">Load Wheel</button>
+        <input type='file' id="loadWh" style='display:none' accpet="text/*">
         <script src='js/settings.js'></script>
         <script src='js/colorPresets.js'></script>
         <script src='js/colorTools.js'></script>
@@ -74,6 +92,10 @@
                 dom.wheelGroup = ws.wheel.wheel.wheelGroup;
                 dom.refreshPieceDom();
                 dom.loadThemePicker();
+
+                //Load confetti canvas:
+                ws.confettiInstance = new confetti.confettiInstance(confettiCanvas,ui.confettiPieces,ui.assetList.audio.confettiSfx,settings.frameRate);
+                ws.quickConfetti = new confetti.confettiInstance(confettiCanvas,ui.confettiPieces,ui.assetList.audio.quickConfetti,settings.frameRate);
             });
         </script>
     </body>

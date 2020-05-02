@@ -12,11 +12,11 @@ var wheelObjs = {
         this.fraction = fraction;
         this.text = text;
         this.render = function(highlight = false){
-            this.bitmap.width = wh;
-            this.bitmap.height = wh/1.9;
+            this.bitmap.width = this.wh;
+            this.bitmap.height = this.wh/1.9;
             var ctx = this.bitmap.getContext("2d");
     
-            var ridgeAvoid = Math.floor( (wh/2) * .967 );
+            var ridgeAvoid = Math.floor( (this.wh/2) * .967 );
     
             //Setup fill style and stroke:
             {
@@ -51,14 +51,15 @@ var wheelObjs = {
                 ctx.strokeStyle=resultStroke+')';
             }
 
-            ctx.lineWidth=10;
+            //Using default height (300) as unit of measurement here
+            ctx.lineWidth=(10 / 300) * this.wh;
             var magicEquation = (2 - (2 / this.fraction) );
             //(magicEquation - (magicEquation/360 * -1))
             ctx.beginPath();
-            ctx.moveTo(wh/2,wh/2);
-            ctx.lineTo(wh,wh/2);
-            ctx.arc(wh/2,wh/2,ridgeAvoid,0, magicEquation * Math.PI,true);
-            ctx.lineTo(wh/2,wh/2);
+            ctx.moveTo(this.wh/2,this.wh/2);
+            ctx.lineTo(this.wh,this.wh/2);
+            ctx.arc(this.wh/2,this.wh/2,ridgeAvoid,0, magicEquation * Math.PI,true);
+            ctx.lineTo(this.wh/2,this.wh/2);
             ctx.fill();
             ctx.stroke();
             ctx.closePath();
@@ -73,16 +74,16 @@ var wheelObjs = {
 
             //The highlight will be to brilliant to see text :')
             if(!highlight){
-                ctx.font=(wh * sizePercent)+'px Arial';
+                ctx.font=(this.wh * sizePercent)+'px Arial';
                 ctx.fillStyle = ctx.strokeStyle;
-                ctx.translate((wh/2)*1.25,(wh/2)*.95);
+                ctx.translate((this.wh/2)*1.25,(this.wh/2)*.95);
                 //We're using a negative number here because the rotation system is counter clockwise
                 ctx.rotate((0- (360 / this.fraction / 2)) * Math.PI/180);
-                ctx.fillText(renderText,wh*.05,0);
+                ctx.fillText(renderText,this.wh*.05,0);
     
                 //Reset text:
                 ctx.rotate( (360 / this.fraction / 2) * Math.PI/180);
-                ctx.translate(0- (wh/2), 0- (wh/2) );
+                ctx.translate(0- (this.wh/2), 0- (this.wh/2) );
             }
         }
     
@@ -103,6 +104,14 @@ var wheelObjs = {
     
         this.pieces = typeof pieces == "number"?wheelObjs.generatePieces(this.masterCanvas.height,pieces,setColor):pieces;
         this.percent = 0; //Where the wheel actually is.
+
+        this.setSize = function(size){
+            this.wheelCanvas.width = 
+            this.wheelCanvas.height = 
+            this.spinCanvas.width = 
+            this.spinCanvas.height = size;
+        }
+
         //If lightUp is a number, light up that piece, otherwise assume it's an array and see if a piece in the index should be lit up.
         this.drawPieces = function(lightUp){
             for(var i = 0;i<this.pieces.length;i++){
@@ -183,7 +192,7 @@ var wheelObjs = {
         this.lightPattern=[];
         this.configure = function(canvasSize = this.canvasSize, count = this.count){
             var ctx = this.canvas.getContext('2d');
-            this.canvas.width = this.canvas.height = canvasSize;
+            this.canvas.width = this.canvas.height = this.canvasSize = canvasSize;
             this.count = count;
             ctx.clearRect(0,0,this.canvas.width,this.canvas.height);
 
@@ -224,22 +233,21 @@ var wheelObjs = {
     //The triangle mount is what holds the wheel. The wheelheight is the reference to how large the final product will be (16% larger canvas)
     makeTriangleMount:function(wheelHeight = 300, canvasSrc = document.createElement('canvas')){
         var ctx = canvasSrc.getContext('2d');
-        var netHeight = wheelHeight * 1.166;
 
-        if(canvasSrc.height != netHeight){
-            canvasSrc.height = netHeight;
-            canvasSrc.width = netHeight;
+        if(canvasSrc.height != wheelHeight){
+            canvasSrc.height = wheelHeight;
+            canvasSrc.width = wheelHeight;
         }
 
-        ctx.clearRect(0,0,netHeight,netHeight);
+        ctx.clearRect(0,0,wheelHeight,wheelHeight);
 
         ctx.beginPath();
         ctx.fillStyle='lightgray';
-        ctx.moveTo(netHeight * .25, 350);
+        ctx.moveTo(wheelHeight , wheelHeight);
 
-        ctx.lineTo(netHeight * .65, 350);
-        ctx.lineTo(netHeight * .45, 350*.5);
-        ctx.lineTo(netHeight * .25, 350);
+        ctx.lineTo(wheelHeight * .70, wheelHeight);
+        ctx.lineTo(wheelHeight * .5, wheelHeight*.5);
+        ctx.lineTo(wheelHeight * .3, wheelHeight);
         ctx.fill();
         ctx.closePath();
 
@@ -248,21 +256,27 @@ var wheelObjs = {
 
     //The image in the center of the wheel. Probably gonna put some of the smilies from my site in here ;P
     //imgElement can be either an image or a canvas.
-    centerAxel:function(canvasHeight,imgElement){
-        this.size = canvasHeight * 2
+    centerAxel:function(canvasHeight,imgElement,spinCanvasSize = 1.5){
+        this.size = canvasHeight;
         this.mainCanvas = document.createElement('canvas');
         this.mainCanvas.height = canvasHeight;
         this.mainCanvas.width = canvasHeight;
 
+        this.spinningSize = spinCanvasSize;
         this.spinCanvas = document.createElement('canvas');
-        this.spinCanvas.width = canvasHeight;
-        this.spinCanvas.height = canvasHeight;
+        this.spinCanvas.width = canvasHeight * this.spinningSize;
+        this.spinCanvas.height = canvasHeight * this.spinningSize;
         this.coreImage = imgElement;
 
         this.renderMainCanvas = function(size = this.size,imgElement = this.coreImage){
             if(size != this.size){
-                this.mainCanvas.width = size;
+                this.mainCanvas.width =
                 this.mainCanvas.height = size;
+                
+                //spinCanvas needs a size adjustment because of this:
+                this.spinCanvas.width = 
+                this.spinCanvas.height = size * this.spinningSize;
+
                 this.size = size;
             }
             var ctx = this.mainCanvas.getContext('2d');
@@ -303,17 +317,18 @@ var wheelObjs = {
 
         this.renderSpin = function(percent = 0){
             var ctx = this.spinCanvas.getContext('2d');
-            ctx.clearRect(0,0,this.size,this.size);
+            var spinningAdjustment = this.size * this.spinningSize;
+            ctx.clearRect(0,0,spinningAdjustment,spinningAdjustment);
 
             //Setup for rotating
-            ctx.translate(this.size/2,this.size/2);
+            ctx.translate(spinningAdjustment/2,spinningAdjustment/2);
             ctx.rotate((360 * percent * .01 ) * Math.PI / 180 );
 
             ctx.drawImage(this.mainCanvas,0-(this.size/2),0-(this.size/2));
 
             //Cleanup
             ctx.rotate((360 * ((0 - percent) * .01) ) * Math.PI / 180 );
-            ctx.translate(0 - (this.size/2), 0 - (this.size/2));
+            ctx.translate(0 - (spinningAdjustment/2), 0 - (spinningAdjustment/2));
         }
     },
 
@@ -384,8 +399,10 @@ var wheelObjs = {
 
         //Unlike the other objects above, this is an object that will constantly be animating. nevertheless, we want to warm up the assets before drawing.
         this.renderAssets = function(height=300){
-            this.coreCanvas.height = height;
+            this.coreCanvas.height = this.coreCanvas.width = height;
+            for(var i of this.wheelGroup.pieces) i.wh = height;
             this.wheelGroup.drawPieces();
+            this.wheelGroup.setSize(height);
             this.wheelGroup.renderWheel();
             this.wheelGroup.renderSpin();
             this.pegSet.configure(height);
@@ -413,7 +430,7 @@ var wheelObjs = {
             ctx.drawImage(this.tickerTriangle.spinCanvas,0,0);
 
             this.centerAxel.renderSpin(percent);
-            ctx.drawImage(this.centerAxel.spinCanvas,this.coreCanvas.height/2.75,this.coreCanvas.height/2.75);
+            ctx.drawImage(this.centerAxel.spinCanvas,this.coreCanvas.height/(2.5+this.centerAxel.spinningSize),this.coreCanvas.height/(2.5+this.centerAxel.spinningSize));
 
         }
 

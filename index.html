@@ -46,20 +46,30 @@
     </head>
     <body>
         <h1 id='loadTag'></h1>
-        <div id='wheelDiv' style='display:inline-block'>
-            <canvas id='confettiCanvas' width=300 height=300></canvas>
+        <div id='fullScreenContainer' style="display: inline-block;" ondblclick="this.requestFullscreen();">
+            <div id='wheelDiv' style='display:inline-block'>
+                <canvas id='confettiCanvas' width=300 height=300></canvas>
+            </div>
+            <p style="text-align:center"><button id='spinButton'>Spin!</button> <input type="checkbox" id='boringModeCheck'> Boring Mode</p>
         </div>
         <div id='pieceEditor'></div><br>
-        <button id='spinButton'>Spin!</button> <input type="checkbox" id='boringModeCheck'> Boring Mode
+        Double click the wheel to enter fullscreen!<br>
         <select id='themePicker'></select> <button onclick='dom.applyTheme(themePicker.value);'>Apply theme</button>
         <button id='addPieceBtn'>Add piece</button>
+        <select id='wheelSize' onchange="settings.size = this.value">
+            <option value=300>1X</option>
+            <option value=600>2X</option>
+            <option value=900>3X</option>
+            <option value=1200>4X</option>
+        </select>
         <div id='imagePreviews' style='width:100%'></div>
         Custom image - <input type="file" id='customImageFile' accept="image/*"><br>
         Rig <input type="checkbox" id='rigCheck'> <button id='dontRig'>Don't Rig</button>
         <br>
         <br>
-        <button id='saveWh'>Save Wheel</button><button onclick="loadWh.click()">Load Wheel</button>
-        <input type='file' id="loadWh" style='display:none' accpet="text/*">
+        <button id='saveWh'>Save Wheel</button><button onclick="loadWh.click()">Load Wheel</button><br>
+        <input type="number" value="60" style='width:40px' onchange="settings.frameRate = this.value"> Framerate (Advanced)
+        <input type='file' id="loadWh" style='display:none' accept="text/*">
         <script src='js/settings.js'></script>
         <script src='js/colorPresets.js'></script>
         <script src='js/colorTools.js'></script>

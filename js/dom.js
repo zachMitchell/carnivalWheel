@@ -204,7 +204,7 @@ spinButton.onclick = function(){
     var targetAnimation = boringModeCheck.checked? wheelAnimations.fakeSpin: wheelAnimations[keys[Math.floor(Math.random()*keys.length)]];
     wheelFuncs.playAnimationWithRng(ws.wheel,targetAnimation,!boringModeCheck.checked,
         (e,f)=>{
-            console.log(e,ws.wheel.percent,ws.wheel.wheel.wheelGroup.percent);
+            // console.log(e,ws.wheel.percent,ws.wheel.wheel.wheelGroup.percent);
             setTimeout(()=>{
                 f.currAnimation = winnerPiece(f,e,()=>{ws.confettiInstance.activate();dom.spinFlag(false);});
                 f.currAnimation.next();
@@ -330,4 +330,13 @@ loadWh.onchange = function(){
 
     }
     fReader.readAsText(loadWh.files[0]);
+}
+
+document.onfullscreenchange = function(){
+    //Determine what's larger: width or height: (.95 to leave room for buttons)
+    var targetSize = document.fullscreen?
+        (fullScreenContainer.scrollHeight < fullScreenContainer.scrollWidth? fullScreenContainer.scrollHeight*.9:fullScreenContainer.scrollWidth*.9):
+        wheelSize.value;
+    settings.size = targetSize;
+    spinButton.parentElement.style.color = document.fullscreen?"white":"";
 }

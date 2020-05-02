@@ -24,7 +24,7 @@ var wheelFuncs = {
         simpleAudio.play(tickSound,undefined,0,volume);
     },
 
-    cymbalOrEaster:()=>returnByChance([cymbalSfx,.8],[easterEgg,.2]),
+    cymbalOrEaster:()=>returnByChance([cymbalSfx,.95],[easterEgg,.05]),
 
     //An "organic" spin (a.k.a not an animation). Spin the wheel based on a variety of values you could change with a real wheel. 
     spin:function(wInst,speed = 2,pegPower = .02,axelDrag = .001){

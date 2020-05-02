@@ -1,4 +1,8 @@
 //Made by Zachary Mitchell in 2019!
+/*This work is licensed under the Creative Commons Attribution 4.0 International License.
+To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0/
+or send a letter to Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.*/
+
 //The core obejcts and helpful functions for creating a wheel
 //General precaution, at least 95% of this code doesn't rely on width, due to most components being even both ways, it's taken out of the equation most of the time.
 

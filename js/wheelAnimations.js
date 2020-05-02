@@ -1,4 +1,8 @@
 //Made by Zachary Mitchell in 2019!
+/*This work is licensed under the Creative Commons Attribution 4.0 International License.
+To view a copy of this license, visit http://creativecommons.org/licenses/by/4.0/
+or send a letter to Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.*/
+
 /*FINALLY that animation stuff is done! :D Now it's time to get creative and make the wheel do fun stuff
 The majority of this file will just be raw data. For a reference on how to make these animations yourself, see: wheelFuncs.js -> animate()*/
 

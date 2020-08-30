@@ -206,10 +206,12 @@ function pegIdleInstance(wheel){
 }
 
 //Winner winner; chicken dinner!!
-function* winnerPiece(wheelInst,targetPiece=0,doneFunc,timesToClunk=6,speed=65){
+function* winnerPiece(wheelInst,targetPiece=0,doneFunc,clunkFunc,timesToClunk=6,speed=65){
     for(var i = 0;i<timesToClunk*2;i++){
         var lightUp = i%2==0;
         wheelInst.wheel.draw(wheelInst.percent,undefined,(lightUp?targetPiece:true));
+        //For every clunk, launch this func
+        if(typeof clunkFunc == 'function') clunkFunc(lightUp,targetPiece,i == (timesToClunk*2)-1);
         if(lightUp) simpleAudio.play(clunk);
         setTimeout(()=>wheelInst.currAnimation.next(),speed);
         yield;

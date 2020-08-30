@@ -56,12 +56,13 @@ var wheelObjs = {
             }
 
             //Using default height (300) as unit of measurement here
-            ctx.lineWidth=(10 / 300) * this.wh;
+            var strokeThickness = this.fraction < 12 ? 300 : 25*this.fraction
+            ctx.lineWidth=(10 / strokeThickness) * this.wh;
             var magicEquation = (2 - (2 / this.fraction) );
             //(magicEquation - (magicEquation/360 * -1))
             ctx.beginPath();
             ctx.moveTo(this.wh/2,this.wh/2);
-            ctx.lineTo(this.wh,this.wh/2);
+            // ctx.lineTo(this.wh,this.wh/2);
             ctx.arc(this.wh/2,this.wh/2,ridgeAvoid,0, magicEquation * Math.PI,true);
             ctx.lineTo(this.wh/2,this.wh/2);
             ctx.fill();

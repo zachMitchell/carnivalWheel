@@ -46,6 +46,9 @@ or send a letter to Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
             #confettiCanvas{
                 position:absolute
             }
+            .inputHighlight{
+                background-color: yellow;
+            }
         </style>
     </head>
     <body>
@@ -68,11 +71,21 @@ or send a letter to Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
         </select>
         <div id='imagePreviews' style='width:100%'></div>
         Custom image - <input type="file" id='customImageFile' accept="image/*"><br>
-        Rig <input type="checkbox" id='rigCheck'> <button id='dontRig'>Don't Rig</button>
-        <br>
+        <input type="checkbox" id='rigCheck'> Rig <button id='dontRig'>Don't Rig</button><br>
+        <input type='checkbox' onchange="advDiv.style = this.checked?'':'display:none'"> Advanced<br>
+        <div id='advDiv' style='display:none'>
+            <input type="number" value="60" style='width:40px' onchange="settings.frameRate = this.value"> Framerate<br>
+            <textarea id="userInput" rows=20 cols=30 placeholder='Manually insert wheel pieces here. Start by adding a name, after that add a color (hex). If no color is placed in, it will be the last color specified in the list.
+            
+Syntax:
+"my awesome label" #FF00FF
+"the awesome piece" #000000'></textarea><br>
+            <button onclick="insertPiecesByString(userInput.value);dom.refreshPieceDom(true);userInput.value=''">Add to Wheel</button> 
+            <button onclick='userInput.value = exportWheelToText()'>Export Wheel Pieces</button>
+            <button onclick='userInput.focus(); userInput.selectionStart = 0; userInput.selectionEnd = userInput.value.length; console.log(userInput.selectionStart,userInput.selectionEnd)'>Highlight text</button>
+        </div>
         <br>
         <button id='saveWh'>Save Wheel</button><button onclick="loadWh.click()">Load Wheel</button><br>
-        <input type="number" value="60" style='width:40px' onchange="settings.frameRate = this.value"> Framerate (Advanced)
 	<input type='file' id="loadWh" style='display:none'> 
         <script src='js/settings.js'></script>
         <script src='js/colorPresets.js'></script>

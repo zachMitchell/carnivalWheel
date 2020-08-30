@@ -162,13 +162,16 @@ var dom = {
         if(dom.wheelGroup.percent > -1) dom.wheelGroup.percent = 0 - dom.wheelGroup.percent;
         wheelFuncs.resetNegativeNumbers(wInst.wheel.wheelGroup);
         // console.warn(dom.wheelGroup.getCurrentPiece());
+        
+        //There's a bug that causes the animation engine to go haywire if you spam space and spin constantly to make quick victory happen. To fix this we can disable the spin button until it's time to idle
+        spinButton.disabled = !dom.spamQV;
 
         //manually invoking a custom confetti throw; probably should have this built in :P
         simpleAudio.play(qC.sfx);
         qC.confettiObj.currAnimation = qC.confettiObj.throwUpwards(settings.frameRate,10,500);
         qC.confettiObj.currAnimation.next();
         var doneFunc = ()=>{
-            wInst.currAnimation = winnerPiece(wInst,riggedPiece || dom.wheelGroup.getCurrentPiece(),()=>{dom.startIdling();dom.spinFlag(0)});
+            wInst.currAnimation = winnerPiece(wInst,riggedPiece || dom.wheelGroup.getCurrentPiece(),()=>{dom.startIdling();dom.spinFlag(0);spinButton.disabled=false},dom.highlightTextbox);
             wInst.currAnimation.next();
         }
 
@@ -182,10 +185,17 @@ var dom = {
             dom.quickVictory();
         }
         document.body.removeEventListener('keydown',dom.quickVictoryListener);
-    }
+    },
+    //To keep DOM code out of animation code we have a function over here that will highlight the winning piece's textbox
+    highlightTextbox:(highlight,targetPiece=0,lastHighlight)=>
+        document.getElementsByClassName('pieceDom')[targetPiece].children[0].classList[highlight || lastHighlight?'add':'remove']('inputHighlight'),
 }
 
 spinButton.onclick = function(){
+    //Clear highlighting for inputs:
+    for(var i of document.getElementsByClassName('pieceDom'))
+        i.children[0].classList.remove('inputHighlight');
+
     dom.spinFlag(true);
     var ws = ui.wheelStuff;
 
@@ -210,7 +220,7 @@ spinButton.onclick = function(){
         (e,f)=>{
             // console.log(e,ws.wheel.percent,ws.wheel.wheel.wheelGroup.percent);
             setTimeout(()=>{
-                f.currAnimation = winnerPiece(f,e,()=>{ws.confettiInstance.activate();dom.spinFlag(false);});
+                f.currAnimation = winnerPiece(f,e,()=>{ws.confettiInstance.activate();dom.spinFlag(false);},dom.highlightTextbox);
                 f.currAnimation.next();
                 dom.startIdling();
             },200);
@@ -344,3 +354,133 @@ document.onfullscreenchange = function(){
     settings.size = targetSize;
     spinButton.parentElement.style.color = document.fullscreen?"white":"";
 }
+
+//An advanced feature: manually insert wheel pieces via string:
+function insertPiecesByString(str,targetElement = pieceEditor){
+    var synError = 'Syntax error on line ';
+    var lastColor = '';
+    var lastColorRgb = [];
+    var lineNumber = 1;
+
+    //Get the last color on the dom as a default backup
+    var hexElements = targetElement.getElementsByClassName('pieceDom');
+    lastColor = hexElements[hexElements.length-1].children[1].value;
+    lastColorRgb = colorTools.hex2RgbArray([lastColor]);
+
+    var pieces = [];
+    //Iterate through newlines!
+    for(var i of str.split('\n')){
+        var hexFilter = '1234567890abcdef';
+        var inputStr='';
+        var inputDone=false;
+
+        var hexStr='';
+        var newHex = false;
+        //From here it's a manual parse. We can detect syntax errors this way.
+        for(var j = 0;j<i.length;j++){
+
+            //Quote management
+            if(j === 0 && i[j] !='"'){
+                alert(synError+lineNumber+': '+'Sorry, I expected a quotation mark (") to hold a label name. A name looks like this - "fred"');
+                return;
+            }
+            //This shouldn't happen on index 0.
+            else if(j !==0 && i[j] == '"' && !inputDone){
+                inputDone = true;
+            }
+            else if(i[j] == '"' && inputDone){
+                alert(synError+lineNumber+': '+' whoah there, " doesn\'t belong there! Only use this to enclose the name of your piece.');
+                return;
+            }
+            //Add to Name string
+            else if(j > 0 && !inputDone) inputStr+=i[j];
+
+            //Figure out if we want hex
+            else if(inputDone){
+                if(i[j] == ' ' && i[j+1] == '#' && !newHex){
+                    newHex = true;
+                    j++;
+                }
+                else if(newHex && hexFilter.indexOf(i[j].toLowerCase()) > -1) hexStr+=i[j];
+
+                else if(newHex && hexStr.length == 6){
+                    alert(synError+lineNumber+': '+'Hex colors are 6 characters long, no more... no less!');
+                    return;
+                }
+                else{
+                    alert(synError+lineNumber+': '+'If you intend on adding a color, make sure you add one space after your label, followed by the color (Like this - "#FF00FF")\n\nBy the way, hex only takes numbers and letters A through F');
+                    return;
+                }
+            }
+
+        }
+
+        //Add the wheel piece!
+        if(hexStr.length !== 0 && hexStr.length !== 6){
+            alert(synError+lineNumber+': '+'Hex colors are 6 characters long, no more... no less!');
+            return;
+        }
+        else if(hexStr !='' && lastColor != '#'+hexStr){
+            lastColor = '#'+hexStr;
+            lastColorRgb = colorTools.hex2RgbArray([lastColor]);
+        }
+
+        pieces.push(new wheelObjs.wheelPiece(dom.wheelGroup.masterCanvas.height,0,lastColorRgb[0],inputStr));
+
+        lineNumber++;
+    }
+
+    //Append pieces to wheel
+    dom.wheelGroup.pieces.push(...pieces);
+    //Adjust piece size
+    for(var i of dom.wheelGroup.pieces)
+        i.fraction = dom.wheelGroup.pieces.length;
+}
+
+//Export pieces of the wheel into something more human-readable than JSON. Pretty darn straightforward, just grab the contents of the dom and return the string
+function exportWheelToText(targetElement = pieceEditor){
+    var str = '';
+    var lastColor = ''
+    for(var i of targetElement.getElementsByClassName('pieceDom')){
+        str+=(str?'\n':'')+'"'+i.children[0].value.split('"').join("'") + '"' + (i.children[1].value == lastColor?'':" " + i.children[1].value);
+        lastColor = i.children[1].value;
+    }
+
+    return str;
+}
+
+//Why hello there you raskle! Saaaay you like hacking shenaniganz? Well here's a little prize for your curiosity - the ability to spam quick victories. Have fun ;)
+document.body.addEventListener('keydown',function(e){
+    if(dom.spamQV) return
+
+    if(!dom.secretCode) dom.secretCode = '';
+    var code = 'spam4FunZeeZ';
+    if(e.key == code[dom.secretCode.length]){
+         dom.secretCode+=code[dom.secretCode.length];
+    }
+
+    else if(e.key!="Shift"){
+        dom.secretCode = '';
+        return;
+    } 
+
+    if(dom.secretCode == code){
+        //Acivate secret!
+        dom.spamQV = true;
+        spinButton.style = 'color:white;background-color:black;border-color:red';
+        spinButton.innerHTML = 'sPiN!'
+        let pieceFanfare = document.getElementsByClassName('pieceDom').length;
+        let pieceCount = 0;
+        let wInst = ui.wheelStuff.wheel;
+        let secretFanfare = ()=>{
+            pieceCount++;
+            if(pieceCount >= pieceFanfare) return
+            else{
+                wInst.currAnimation = winnerPiece(wInst,pieceCount,secretFanfare,undefined,1,300 / pieceFanfare);
+                wInst.currAnimation.next();
+            }
+        }
+        wInst.currAnimation = winnerPiece(wInst,pieceCount,secretFanfare,undefined,1,100);
+        wInst.currAnimation.next();
+    }
+});

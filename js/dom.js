@@ -171,8 +171,10 @@ var dom = {
         qC.confettiObj.currAnimation = qC.confettiObj.throwUpwards(settings.frameRate,10,500);
         qC.confettiObj.currAnimation.next();
         var doneFunc = ()=>{
-            wInst.currAnimation = winnerPiece(wInst,riggedPiece || dom.wheelGroup.getCurrentPiece(),()=>{dom.startIdling();dom.spinFlag(0);spinButton.disabled=false},dom.highlightTextbox);
+            var targetIndex = riggedPiece || dom.wheelGroup.getCurrentPiece();
+            wInst.currAnimation = winnerPiece(wInst,targetIndex,()=>{dom.startIdling();dom.spinFlag(0);spinButton.disabled=false},dom.highlightTextbox);
             wInst.currAnimation.next();
+            previousWins.value+= document.getElementsByClassName('pieceDom')[targetIndex].children[0].value + '\n--\n';
         }
 
         if(riggedPiece !== undefined)
@@ -222,6 +224,7 @@ spinButton.onclick = function(){
             setTimeout(()=>{
                 f.currAnimation = winnerPiece(f,e,()=>{ws.confettiInstance.activate();dom.spinFlag(false);},dom.highlightTextbox);
                 f.currAnimation.next();
+                previousWins.value+= document.getElementsByClassName('pieceDom')[e].children[0].value + '\n--\n';
                 dom.startIdling();
             },200);
     },riggedPiece);

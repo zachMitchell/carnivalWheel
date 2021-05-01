@@ -83,8 +83,8 @@ var simpleAudio = {
         }
         else throw Error('Unknown format; provide me with a link to audio (string), a blob or arrayBuffer please. :)');
     },
-    //Allocate resources and play the file:
-    play:async function(soundObj,duration,startAt=0,volume=1){
+    //Allocate resources and play the file.
+    play:async function(soundObj,duration,startAt=0,volume=1,gainStart,gainEnd){
         var makeCtx = false;
         var context;
         //Make a context if there are none, all are taken, or the sound isn't reset friendly
@@ -111,7 +111,13 @@ var simpleAudio = {
             if(volume != 1){
                 gain = context.ctx.createGain();
                 source.connect(gain);
-                gain.gain.setValueAtTime(volume,0);
+
+                if(typeof volume == 'object')
+                    gain.gain.setValueCurveAtTime(volume[0],volume[1],volume[2])
+
+                else gain.gain.setValueAtTime(volume,0);
+
+                console.log(gain);
             }
             source.buffer = data;
             source.onended = ()=>simpleAudio.stop(soundObj,1);

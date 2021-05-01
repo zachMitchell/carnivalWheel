@@ -59,7 +59,12 @@ or send a letter to Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
             </div>
             <p style="text-align:center"><button id='spinButton'>Spin!</button> <input type="checkbox" id='boringModeCheck'> Boring Mode</p>
         </div>
-        <div id='pieceEditor'></div><br>
+        <div id='pieceEditor'></div>
+        <div style='display: inline-block;'>
+            <textarea readonly id='previousWins' rows=20 cols=20></textarea><br>
+            <p style='text-align: center;'><button onclick='previousWins.value=""'>Clear Previous Winners</button></p>
+        </div>
+        <br>
         Double click the wheel to enter fullscreen!<br>
         <select id='themePicker'></select> <button onclick='dom.applyTheme(themePicker.value);'>Apply theme</button>
         <button id='addPieceBtn'>Add piece</button>

@@ -90,7 +90,7 @@ var wheelFuncs = {
         var targetPercent = (100/pieceCount) * targetPiece;
         var currLocation = wheelInst.wheel.wheelGroup.percent;
         var finalDestination = (100 - currLocation) + (100-targetPercent);
-        console.warn(100 + targetPercent);
+        // console.warn(100 + targetPercent);
 
         wheelInst.currAnimation = wheelFuncs.animate({wheel:wheelInst,sectors:[
             {goTo:0,append:1,duration:1000,preFunc:()=>this.resetNegativeNumbers(wheelInst),doneFunc:()=>{simpleAudio.play(whoopSfx);simpleAudio.play(drmRoll,.7)}},

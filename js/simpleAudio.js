@@ -116,8 +116,6 @@ var simpleAudio = {
                     gain.gain.setValueCurveAtTime(volume[0],volume[1],volume[2])
 
                 else gain.gain.setValueAtTime(volume,0);
-
-                console.log(gain);
             }
             source.buffer = data;
             source.onended = ()=>simpleAudio.stop(soundObj,1);

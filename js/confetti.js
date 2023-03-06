@@ -142,6 +142,13 @@ var confetti = {
 
         }
 
+        this.modularListener = function(pieceCount, duration){
+            console.warn('yes');
+            if(sfx) simpleAudio.play(sfx);
+            this.confettiObj.currAnimation = this.confettiObj.throwUpwards(this.frameRate, pieceCount, duration);
+            this.confettiObj.currAnimation.next();
+        }
+
         this.activate = function(){
             document.body.addEventListener('keydown',this.bodyListener);
             this.prompt.colorPercent = 0;

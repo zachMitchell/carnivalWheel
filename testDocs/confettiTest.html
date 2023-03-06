@@ -8,6 +8,12 @@
         <script src='../js/generalFuncs.js'></script>
         <script src='../js/simpleAudio.js'></script>
         <script src='../js/confetti.js'></script>
+        <button id="greenScreenMode">Green screen mode</button> 
+        <span id="gsmSpan" style="display: none;">
+            <input id="conCount" type="number" value="30">
+            <input id="duration" type="number" value="1000">
+        </span>
+
         <script>
             // var newPrompt = new confetti.prompt(testCanvas);
             // prompt.currInterval = setInterval(()=>{
@@ -17,7 +23,8 @@
             var testConfetti,
                 confettiPieces = [],
                 loadedImgs = 0,
-                assetChars = 'ROYGBIV'; //basically like an array
+                assetChars = 'ROYGBIV', //basically like an array
+                activeTarget;
 
             for(var i of assetChars){
                 confettiPieces.push(document.createElement('img'));
@@ -42,6 +49,21 @@
             //     testConfetti.currAnimation = testConfetti.throwUpwards(pieceCount,duration,frameRate);
             //     testConfetti.currAnimation.next();
             // }
+
+        greenScreenMode.onclick = ()=>{
+            testCanvas.width = 1920;
+            testCanvas.height = 1080;
+            testCanvas.style.backgroundColor = "#00FF00";
+            testCanvas.style.border = "";
+            document.body.addEventListener("click", e=>activeTarget = e.target);
+            document.body.addEventListener("keydown", ()=> activeTarget == testCanvas ? testConfetti.modularListener(conCount.value, duration.value) : 0);
+            testCanvas.ondblclick = function(){this.requestFullscreen()};
+            gsmSpan.style.display = "";
+
+            //Remove the green piece (4th index)
+            delete testConfetti.confettiObj.assets[3];
+            testConfetti.confettiObj.assets = testConfetti.confettiObj.assets.filter(e=>e);
+        }
         </script>
     </body>
 </html>
